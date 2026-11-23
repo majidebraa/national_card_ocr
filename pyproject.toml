@@ -17,7 +17,7 @@ classifiers = [
 ]
 dependencies = [
   "numpy>=1.26",
-  "opencv-python-headless>=4.9",
+  "opencv-python-headless>=4.9,<5.1",  # 5.1 removed cv2.HOGDescriptor, used by ocr/digits.py
   "pillow>=10.3",
   "pytesseract>=0.3.10",
   "cryptography>=42",
