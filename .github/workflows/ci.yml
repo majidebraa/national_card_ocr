@@ -50,7 +50,7 @@ jobs:
       - run: pip install -e ".[dev]"
       - name: Run tests with coverage
         run: pytest --cov --cov-report=xml --cov-report=term-missing
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: matrix.python == '3.12'
         with:
           name: coverage-xml
@@ -76,7 +76,7 @@ jobs:
             idcard-ocr bench data/$level --json data/$level.json | tee -a "$GITHUB_STEP_SUMMARY"
             python scripts/check_benchmark.py data/$level.json $level
           done
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: benchmark-reports
           path: data/*.json
