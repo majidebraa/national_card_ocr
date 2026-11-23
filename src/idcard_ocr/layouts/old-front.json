@@ -1,0 +1,115 @@
+{
+  "id": "old-front",
+  "version": "old",
+  "side": "front",
+  "card_size": [
+    1011,
+    638
+  ],
+  "palette_rgb": [
+    222,
+    230,
+    196
+  ],
+  "bg_probe": [
+    30,
+    596,
+    950,
+    30
+  ],
+  "markers": {
+    "photo": [
+      40,
+      120,
+      230,
+      300
+    ]
+  },
+  "fields": {
+    "national_id": {
+      "roi": [
+        300,
+        110,
+        430,
+        60
+      ],
+      "label_roi": [
+        745,
+        110,
+        230,
+        60
+      ],
+      "label": "کد ملی",
+      "kind": "national_id",
+      "required": true
+    },
+    "first_name": {
+      "roi": [
+        300,
+        190,
+        430,
+        60
+      ],
+      "label_roi": [
+        745,
+        190,
+        230,
+        60
+      ],
+      "label": "نام",
+      "kind": "name",
+      "required": true
+    },
+    "last_name": {
+      "roi": [
+        300,
+        270,
+        430,
+        60
+      ],
+      "label_roi": [
+        745,
+        270,
+        230,
+        60
+      ],
+      "label": "نام خانوادگی",
+      "kind": "name",
+      "required": true
+    },
+    "father_name": {
+      "roi": [
+        300,
+        350,
+        430,
+        60
+      ],
+      "label_roi": [
+        745,
+        350,
+        230,
+        60
+      ],
+      "label": "نام پدر",
+      "kind": "name",
+      "required": true
+    },
+    "birth_date": {
+      "roi": [
+        300,
+        430,
+        430,
+        60
+      ],
+      "label_roi": [
+        745,
+        430,
+        230,
+        60
+      ],
+      "label": "تاریخ تولد",
+      "kind": "date",
+      "required": true
+    }
+  }
+}

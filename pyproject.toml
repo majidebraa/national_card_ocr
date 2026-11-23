@@ -1,0 +1,98 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "iran-idcard-ocr"
+version = "0.1.0"
+description = "CPU-only detection, rectification and OCR for Iranian national ID cards (old/new, front/back) with encrypted image retention."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+keywords = ["ocr", "kyc", "persian", "farsi", "national-id", "opencv", "tesseract"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: MIT License",
+  "Topic :: Scientific/Engineering :: Image Recognition",
+]
+dependencies = [
+  "numpy>=1.26",
+  "opencv-python-headless>=4.9",
+  "pillow>=10.3",
+  "pytesseract>=0.3.10",
+  "cryptography>=42",
+  "fastapi>=0.110",
+  "uvicorn>=0.29",
+  "python-multipart>=0.0.9",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8",
+  "pytest-cov>=5",
+  "ruff>=0.5",
+  "mypy>=1.10",
+  "httpx>=0.27",
+]
+
+[project.scripts]
+idcard-ocr = "idcard_ocr.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+idcard_ocr = ["layouts/*.json", "py.typed"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra --strict-markers"
+markers = [
+  "ocr: needs the tesseract binary with the 'fas' language pack",
+]
+
+[tool.coverage.run]
+source = ["idcard_ocr"]
+branch = true
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+fail_under = 80
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "SIM", "S", "C4", "RUF"]
+ignore = [
+  "RUF001", # Persian text contains look-alike Unicode by nature
+  "RUF002",
+  "RUF003",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101", "S105", "S106", "S311"]
+"src/idcard_ocr/synth/**" = ["S311"]  # non-cryptographic randomness is intended here
+"src/idcard_ocr/ocr/digit_train.py" = ["S311"]
+
+[tool.mypy]
+warn_unused_ignores = true
+warn_redundant_casts = true
+warn_return_any = true
+disallow_untyped_defs = true
+check_untyped_defs = true
+ignore_missing_imports = true
+
+# OpenCV and Pillow ship loose type stubs; these modules are dominated by their calls.
+[[tool.mypy.overrides]]
+module = [
+  "idcard_ocr.fields",
+  "idcard_ocr.ocr.digits",
+  "idcard_ocr.ocr.digit_train",
+  "idcard_ocr.synth.render",
+  "idcard_ocr.synth.scene",
+]
+disable_error_code = ["call-overload", "arg-type", "no-any-return", "attr-defined", "return-value"]

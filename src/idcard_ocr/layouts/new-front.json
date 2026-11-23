@@ -1,0 +1,138 @@
+{
+  "id": "new-front",
+  "version": "new",
+  "side": "front",
+  "card_size": [
+    1011,
+    638
+  ],
+  "palette_rgb": [
+    205,
+    225,
+    240
+  ],
+  "bg_probe": [
+    30,
+    596,
+    950,
+    30
+  ],
+  "markers": {
+    "photo": [
+      40,
+      120,
+      230,
+      300
+    ],
+    "chip": [
+      50,
+      450,
+      100,
+      80
+    ]
+  },
+  "fields": {
+    "national_id": {
+      "roi": [
+        300,
+        110,
+        430,
+        60
+      ],
+      "label_roi": [
+        745,
+        110,
+        230,
+        60
+      ],
+      "label": "کد ملی",
+      "kind": "national_id",
+      "required": true
+    },
+    "first_name": {
+      "roi": [
+        300,
+        190,
+        430,
+        60
+      ],
+      "label_roi": [
+        745,
+        190,
+        230,
+        60
+      ],
+      "label": "نام",
+      "kind": "name",
+      "required": true
+    },
+    "last_name": {
+      "roi": [
+        300,
+        270,
+        430,
+        60
+      ],
+      "label_roi": [
+        745,
+        270,
+        230,
+        60
+      ],
+      "label": "نام خانوادگی",
+      "kind": "name",
+      "required": true
+    },
+    "father_name": {
+      "roi": [
+        300,
+        350,
+        430,
+        60
+      ],
+      "label_roi": [
+        745,
+        350,
+        230,
+        60
+      ],
+      "label": "نام پدر",
+      "kind": "name",
+      "required": true
+    },
+    "birth_date": {
+      "roi": [
+        300,
+        430,
+        430,
+        60
+      ],
+      "label_roi": [
+        745,
+        430,
+        230,
+        60
+      ],
+      "label": "تاریخ تولد",
+      "kind": "date",
+      "required": true
+    },
+    "expiry_date": {
+      "roi": [
+        300,
+        510,
+        430,
+        60
+      ],
+      "label_roi": [
+        745,
+        510,
+        230,
+        60
+      ],
+      "label": "تاریخ انقضا",
+      "kind": "date",
+      "required": false
+    }
+  }
+}

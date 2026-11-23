@@ -1,0 +1,48 @@
+{
+  "id": "old-back",
+  "version": "old",
+  "side": "back",
+  "card_size": [
+    1011,
+    638
+  ],
+  "palette_rgb": [
+    222,
+    230,
+    196
+  ],
+  "bg_probe": [
+    30,
+    596,
+    950,
+    30
+  ],
+  "markers": {
+    "barcode": [
+      60,
+      110,
+      890,
+      210
+    ]
+  },
+  "fields": {
+    "serial_no": {
+      "roi": [
+        300,
+        370,
+        430,
+        60
+      ],
+      "label_roi": [
+        745,
+        370,
+        230,
+        60
+      ],
+      "label": "شماره سریال",
+      "kind": "serial",
+      "required": true,
+      "regex": "^[A-Z0-9]{8,12}$"
+    }
+  }
+}

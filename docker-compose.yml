@@ -1,0 +1,27 @@
+# Local/production-like run. Create .env from .env.example first.
+services:
+  idcard-ocr:
+    build: .
+    image: iran-idcard-ocr:local
+    env_file: .env
+    environment:
+      IDCARD_STORE_DIR: /data
+    ports:
+      - "127.0.0.1:8000:8000"   # put a TLS-terminating reverse proxy in front for real use
+    volumes:
+      - idcard-data:/data
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop: [ALL]
+    security_opt:
+      - no-new-privileges:true
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: 1g
+    restart: unless-stopped
+
+volumes:
+  idcard-data:
