@@ -10,10 +10,14 @@ front and back), with **encrypted image retention** for later identity verificat
 > **Read this first: status and honest limits**
 >
 > * The built-in layouts describe a **synthetic specimen design**, not the real card artwork.
->   Accuracy on real cards is **not measured**. Before production you must calibrate the layouts
->   (a few minutes per card design with `idcard-ocr overlay`, see
->   [docs/calibration.md](docs/calibration.md)) and run the benchmark on consented real samples.
-> * The digit model is trained on locally available fonts, so it is also unvalidated on real print.
+>   Before production you must calibrate the layouts on real, consented samples
+>   ([docs/calibration.md](docs/calibration.md)).
+> * First real-photo measurement (fictional cards from a public Kaggle dataset, new-card fronts,
+>   hand-held photos): about **84% of photos accepted; national id 45%, dates about 40% exact** after
+>   calibration, names about one third ([docs/benchmarks.md](docs/benchmarks.md)). That is not
+>   production quality. Old cards and card backs have no real-photo calibration at all.
+> * The bundled digit model is trained on fonts and does not read the real card numerals; a model
+>   trained on real glyphs does (see [calibration/kaggle](calibration/kaggle/README.md)).
 > * Free-text names are read with Tesseract's Persian model, which is weak. **Names always require
 >   user confirmation** (`needs_review: true`) unless you opt out.
 > * This is OCR, not identity verification. It does no liveness check, face matching, forgery

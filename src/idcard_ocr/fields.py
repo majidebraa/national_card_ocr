@@ -9,7 +9,8 @@ hard crops still get several chances.
 from __future__ import annotations
 
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
+from itertools import product
 
 import cv2
 import numpy as np
@@ -32,6 +33,73 @@ def crop_roi(card: np.ndarray, box: Box, size: tuple[int, int]) -> np.ndarray:
     b = box.scaled(w / size[0], h / size[1])
     x0, y0 = max(0, b.x), max(0, b.y)
     return card[y0 : min(h, b.y + b.h), x0 : min(w, b.x + b.w)]
+
+
+# Rectification is never perfect on phone photos (a side can be clipped by a finger or a washed-out
+# edge), so a field box can land a little off. Digit fields therefore retry a few small shifts of
+# the box (in layout pixels) when the first reading is not plausible.
+SHIFTS: tuple[tuple[int, int], ...] = (
+    (0, 0),
+    (0, -14),
+    (0, 14),
+    (-30, 0),
+    (30, 0),
+    (0, -28),
+    (0, 28),
+    (-30, -14),
+    (30, 14),
+    (-30, 14),
+    (30, -14),
+    (60, 0),
+    (-60, 0),
+)
+
+
+def _shifted(box: Box, dx: int, dy: int) -> Box:
+    return Box(box.x + dx, box.y + dy, box.w, box.h)
+
+
+# Wider scan used once per card to find where the printed text block really sits.
+_LOCATE_DX = (0, -40, 40)
+_LOCATE_DY = tuple(range(-60, 61, 12))
+_LOCATE_CONFIDENT = 0.6
+
+
+def locate_offset(
+    digits: DigitEngine,
+    card: np.ndarray,
+    spec: FieldSpec,
+    layout_size: tuple[int, int],
+) -> tuple[int, int] | None:
+    """Find the (dx, dy) shift of the text block, using the national id line as the anchor.
+
+    The id is the one field that must read as exactly ten digits, which makes it a strong,
+    self-checking anchor: a box that lands on a name, a date or empty paper does not produce ten
+    digits. Shifts are tried nearest-first, so a well-registered card costs a single attempt.
+    Returns ``None`` when no shift yields ten digits (the caller keeps the layout positions).
+    """
+    grid = sorted(product(_LOCATE_DX, _LOCATE_DY), key=lambda s: 0.5 * abs(s[0]) + abs(s[1]))
+    best: tuple[float, tuple[int, int]] | None = None
+    for dx, dy in grid:
+        variants = preprocess_variants(crop_roi(card, _shifted(spec.roi, dx, dy), layout_size))
+        for img in variants[:2]:
+            reading = digits.read(img)
+            if len(re.sub(r"\D", "", to_ascii_digits(reading.text))) != 10:
+                continue
+            if reading.confidence >= _LOCATE_CONFIDENT:
+                return (dx, dy)
+            if best is None or reading.confidence > best[0]:
+                best = (reading.confidence, (dx, dy))
+    return best[1] if best else None
+
+
+def _plausible(kind: str, cand: _Candidate) -> bool:
+    """A reading that has exactly the expected glyph count is almost surely the right place."""
+    if cand.valid:
+        return True
+    if kind == "national_id":
+        return len(re.sub(r"\D", "", to_ascii_digits(cand.raw))) == 10
+    return False
 
 
 def _ensure_dark_on_light(binary: np.ndarray) -> np.ndarray:
@@ -206,6 +274,39 @@ def _read_serial(
     return best or _Candidate("", "", 0.0, False, ["no_text"])
 
 
+def _read_digit_field(
+    engine: OcrEngine,
+    digits: DigitEngine,
+    card: np.ndarray,
+    spec: FieldSpec,
+    layout_size: tuple[int, int],
+    first_variants: list[np.ndarray],
+    max_shifts: int = len(SHIFTS),
+) -> _Candidate:
+    """Read a digit field, retrying small box shifts until a plausible reading appears."""
+    best: _Candidate | None = None
+    for n, (dx, dy) in enumerate(SHIFTS[:max_shifts]):
+        variants = (
+            first_variants
+            if n == 0
+            else preprocess_variants(crop_roi(card, _shifted(spec.roi, dx, dy), layout_size))
+        )
+        if not variants:
+            continue
+        if spec.kind == "national_id":
+            cand = _read_national_id(engine, digits, variants)
+        else:
+            cand = _read_date(engine, digits, variants)
+        if best is None or (_plausible(spec.kind, cand), *_score(cand)) > (
+            _plausible(spec.kind, best),
+            *_score(best),
+        ):
+            best = cand
+        if _plausible(spec.kind, cand):
+            break
+    return best or _Candidate("", "", 0.0, False, ["no_text"])
+
+
 def read_field(
     engine: OcrEngine,
     card: np.ndarray,
@@ -217,14 +318,22 @@ def read_field(
     alt_lang: str = "",
     digit_engine: DigitEngine | None = None,
     trust_names: bool = False,
+    offset: tuple[int, int] = (0, 0),
+    max_shifts: int = len(SHIFTS),
 ) -> FieldResult:
+    if offset != (0, 0):
+        spec = replace(spec, roi=_shifted(spec.roi, *offset))
     crop = crop_roi(card, spec.roi, layout_size)
     variants = preprocess_variants(crop)
     if not variants:
         return FieldResult(
             value="", raw="", confidence=0.0, valid=False, needs_review=True, issues=["empty_crop"]
         )
-    if spec.kind == "national_id":
+    if spec.kind in ("national_id", "date") and digit_engine is not None:
+        cand = _read_digit_field(
+            engine, digit_engine, card, spec, layout_size, variants, max_shifts
+        )
+    elif spec.kind == "national_id":
         cand = _read_national_id(engine, digit_engine, variants)
     elif spec.kind == "date":
         cand = _read_date(engine, digit_engine, variants)

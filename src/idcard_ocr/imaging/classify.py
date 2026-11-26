@@ -20,7 +20,7 @@ import numpy as np
 from idcard_ocr.errors import ClassificationError
 from idcard_ocr.layouts import Box, Layout, LayoutRegistry
 
-MIN_SCORE = 0.45
+MIN_SCORE = 0.35
 MIN_MARGIN = 0.04
 
 
@@ -94,8 +94,9 @@ def _palette_similarity(card_bgr: np.ndarray, layout: Layout) -> float:
     med = np.median(lab, axis=0)
     r, g, b = layout.palette_rgb
     ref = cv2.cvtColor(np.array([[[b, g, r]]], dtype=np.uint8), cv2.COLOR_BGR2LAB)[0, 0]
-    dist = float(np.linalg.norm(med - ref.astype(np.float32)))
-    return float(np.exp(-dist / 30.0))
+    # Compare chroma only: lightness swings with exposure and flash, hue barely does.
+    dist = float(np.linalg.norm((med - ref.astype(np.float32))[1:]))
+    return float(np.exp(-dist / 20.0))
 
 
 def score_hypothesis(card_bgr: np.ndarray, layout: Layout, registry: LayoutRegistry) -> float:

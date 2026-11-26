@@ -130,3 +130,29 @@ class TestQuality:
         assert ratio == pytest.approx(1 / len(boxes))
         rep = with_glare(assess_quality(card, 1500, Settings()), ratio, Settings())
         assert "glare" in rep.issues
+
+
+class TestContentScore:
+    QUAD = np.array([[20, 20], [380, 20], [380, 240], [20, 240]], np.float32)
+
+    def test_flat_patch_scores_zero(self) -> None:
+        from idcard_ocr.imaging.detect import _content_score
+
+        flat = np.full((300, 400, 3), (180, 90, 160), np.uint8)  # coloured but featureless
+        assert _content_score(self.QUAD, flat) == 0.0
+
+    def test_neutral_grey_scores_zero(self) -> None:
+        from idcard_ocr.imaging.detect import _content_score
+
+        rng = np.random.default_rng(0)
+        grey = rng.integers(60, 200, (300, 400, 1), dtype=np.uint8).repeat(3, axis=2)
+        assert _content_score(self.QUAD, grey) == 0.0  # detailed but colourless (e.g. a portrait)
+
+    def test_coloured_detailed_region_scores_high(self) -> None:
+        from idcard_ocr.imaging.detect import _content_score
+
+        rng = np.random.default_rng(0)
+        card = np.full((300, 400, 3), (230, 215, 190), np.uint8)
+        card[::6] = (60, 40, 30)  # text-like detail
+        card = np.clip(card + rng.integers(0, 6, card.shape), 0, 255).astype(np.uint8)
+        assert _content_score(self.QUAD, card) > 0.8

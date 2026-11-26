@@ -1,0 +1,96 @@
+{
+  "id": "new-front-kaggle",
+  "version": "new",
+  "side": "front",
+  "card_size": [
+    1011,
+    638
+  ],
+  "palette_rgb": [
+    175,
+    200,
+    225
+  ],
+  "bg_probe": [
+    250,
+    560,
+    450,
+    50
+  ],
+  "markers": {
+    "photo": [
+      60,
+      170,
+      270,
+      305
+    ]
+  },
+  "fields": {
+    "national_id": {
+      "roi": [
+        560,
+        146,
+        260,
+        56
+      ],
+      "label": "شماره ملی",
+      "kind": "national_id",
+      "required": true
+    },
+    "first_name": {
+      "roi": [
+        480,
+        212,
+        340,
+        58
+      ],
+      "label": "نام",
+      "kind": "name",
+      "required": true
+    },
+    "last_name": {
+      "roi": [
+        480,
+        272,
+        340,
+        58
+      ],
+      "label": "نام خانوادگی",
+      "kind": "name",
+      "required": true
+    },
+    "birth_date": {
+      "roi": [
+        580,
+        330,
+        240,
+        54
+      ],
+      "label": "تاریخ تولد",
+      "kind": "date",
+      "required": true
+    },
+    "father_name": {
+      "roi": [
+        480,
+        392,
+        340,
+        60
+      ],
+      "label": "نام پدر",
+      "kind": "name",
+      "required": true
+    },
+    "expiry_date": {
+      "roi": [
+        580,
+        453,
+        240,
+        54
+      ],
+      "label": "پایان اعتبار",
+      "kind": "date",
+      "required": false
+    }
+  }
+}

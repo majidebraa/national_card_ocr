@@ -111,3 +111,45 @@ def test_crop_roi_scales_with_card_size() -> None:
     small = np.zeros((319, 505, 3), np.uint8)
     crop = crop_roi(small, Box(300, 100, 400, 60), SIZE)
     assert crop.shape[:2] == (30, 200)
+
+
+class TestLocateOffset:
+    """The text block is found by anchoring on the national id line (ten digits, self-checking)."""
+
+    def _setup(self, flat_cards, registry):  # type: ignore[no-untyped-def]
+        card, values = flat_cards["new-front"]
+        spec = registry.get("new-front").fields["national_id"]
+        return card, values, spec, registry.get("new-front").size
+
+    def test_well_registered_card_needs_no_shift(self, flat_cards, registry) -> None:  # type: ignore[no-untyped-def]
+        from idcard_ocr.fields import locate_offset
+
+        card, _, spec, size = self._setup(flat_cards, registry)
+        assert locate_offset(DigitEngine(), card, spec, size) == (0, 0)
+
+    def test_recovers_a_vertical_shift(self, flat_cards, registry) -> None:  # type: ignore[no-untyped-def]
+        import cv2
+
+        from idcard_ocr.fields import locate_offset
+
+        card, _, spec, size = self._setup(flat_cards, registry)
+        # Content moved 24 px down, so the box has to move 24 px down too.
+        moved = cv2.warpAffine(
+            card, np.float32([[1, 0, 0], [0, 1, 24]]), size, borderMode=cv2.BORDER_REPLICATE
+        )
+        found = locate_offset(DigitEngine(), moved, spec, size)
+        assert found is not None
+        assert abs(found[1] - 24) <= 12 and abs(found[0]) <= 40
+
+    def test_returns_none_when_no_line_reads_as_ten_digits(self, registry) -> None:  # type: ignore[no-untyped-def]
+        from idcard_ocr.fields import locate_offset
+
+        spec = registry.get("new-front").fields["national_id"]
+        assert locate_offset(DigitEngine(), CARD, spec, SIZE) is None
+
+    def test_read_field_applies_the_offset(self) -> None:
+        engine = Scripted(OcrText("1370/05/12", 0.9))
+        spec = FieldSpec("birth", Box(500, 300, 200, 50), "date")
+        # The shifted box would leave the card, so the crop is clamped rather than failing.
+        res = read_field(engine, CARD, spec, SIZE, review_confidence=0.6, offset=(400, 400))
+        assert isinstance(res.value, str)

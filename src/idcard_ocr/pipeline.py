@@ -9,7 +9,7 @@ import cv2
 
 from idcard_ocr.config import Settings
 from idcard_ocr.errors import QualityError, StoreDisabledError
-from idcard_ocr.fields import read_field
+from idcard_ocr.fields import SHIFTS, locate_offset, read_field
 from idcard_ocr.imaging.classify import classify
 from idcard_ocr.imaging.decode import decode_image, encode_jpeg
 from idcard_ocr.imaging.detect import detect_card, quad_width_px, rectify
@@ -113,6 +113,22 @@ class Pipeline:
         self._gate(quality, warnings, only="glare")
         t = lap("classify", t)
 
+        offset = (0, 0)
+        max_shifts = len(SHIFTS)
+        anchor = next((f for f in layout.fields.values() if f.kind == "national_id"), None)
+        if anchor is not None and self.digit_engine is not None:
+            found = locate_offset(self.digit_engine, card, anchor, layout.size)
+            if found is None:
+                # No line read as ten digits: the photo is probably unusable, so do not burn CPU
+                # on retries; every digit field is flagged for review below.
+                warnings.append("text_block_not_located")
+                max_shifts = 1
+            else:
+                offset = found
+                max_shifts = 3  # the anchor is accurate; only small local jitter remains
+                if offset != (0, 0):
+                    warnings.append("text_block_shifted")
+
         fields: dict[str, FieldResult] = {}
         for name, spec in layout.fields.items():
             fields[name] = read_field(
@@ -125,6 +141,8 @@ class Pipeline:
                 alt_lang=s.ocr_alt_lang,
                 trust_names=s.trust_names,
                 digit_engine=self.digit_engine,
+                offset=offset,
+                max_shifts=max_shifts,
             )
         t = lap("ocr", t)
 

@@ -35,3 +35,9 @@ card artwork. Calibrate them on real, consented samples before relying on the ou
 Do not go live until, on a few hundred real photos, the national-id and date fields have a silent
 error rate you can accept, and a human confirmation step exists for names. Revisit after every
 layout or model change; CI only guards the synthetic benchmark.
+
+## A worked example
+
+`calibration/kaggle` calibrates the new-card front on a public dataset of fictional cards and
+shows the whole loop: layout, orientation, digit retraining on real glyphs, held-out evaluation
+(`scripts/kaggle_eval.py`). Its results and what limited them are in [benchmarks.md](benchmarks.md).
