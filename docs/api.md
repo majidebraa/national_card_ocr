@@ -28,7 +28,7 @@ Returns a `CardResult` (see the schema at `/openapi.json`). Important members:
 Fields `front`, `back` (files), optional `version`, `store_image`. The version found on the front
 is applied to the back. Returns `{front, back, consistent, warnings}`.
 
-## `GET /v1/images/{id}?variant=original|card`, `DELETE /v1/images/{id}`
+## `GET /v1/images/{id}?variant=original|card|portrait`, `DELETE /v1/images/{id}`
 
 Decrypts and returns a retained image (`original` is byte-identical to the upload), or erases it.
 Ids are random 128-bit hex strings. Expired records answer `404` and are removed by

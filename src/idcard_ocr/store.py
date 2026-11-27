@@ -35,7 +35,7 @@ from idcard_ocr.errors import ImageNotFoundError, StorageError
 
 MAGIC = b"IDOC1"
 _ID_RE = re.compile(r"^[0-9a-f]{32}$")
-VARIANTS = ("original", "card")
+VARIANTS = ("original", "card", "portrait")
 
 
 def generate_key() -> str:

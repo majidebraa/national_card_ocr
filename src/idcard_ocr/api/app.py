@@ -242,7 +242,7 @@ def create_app(settings: Settings | None = None, pipeline: Pipeline | None = Non
     @app.get("/v1/images/{image_id}", tags=["images"], dependencies=[auth])
     async def get_image(
         image_id: str,
-        variant: Annotated[Literal["original", "card"], Query()] = "original",
+        variant: Annotated[Literal["original", "card", "portrait"], Query()] = "original",
     ) -> Response:
         st = need_store()
         data = await asyncio.get_running_loop().run_in_executor(None, st.load, image_id, variant)

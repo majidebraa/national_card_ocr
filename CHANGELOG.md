@@ -2,6 +2,12 @@
 
 ## 0.1.0 - unreleased
 
+* Face-photo extraction: `idcard_ocr.portrait` (OpenCV YuNet, bundled 232 KB ONNX, MIT, ~40 ms per
+  card on CPU) crops the portrait inside the layout's photo box (shifted by the located text block).
+  Reported as `portrait` in the result (`face_found`, `confidence`, boxes), retained encrypted as the
+  `portrait` variant (`GET /v1/images/{id}?variant=portrait`); warning `portrait_face_not_found` when
+  no face is detected. `IDCARD_EXTRACT_PORTRAIT=0` disables it. On 1568 real hand-held photos a face
+  was found in 66% (misses are mostly frames where no card was detected).
 * Real-photo work (Kaggle dataset): stronger card detector (saturation/pastel masks, edge-support and
   content scoring, outermost-candidate rule, small-card pass), chroma-only palette matching,
   anchor-based registration of the text block (`locate_offset`), shifted-box retries for digit

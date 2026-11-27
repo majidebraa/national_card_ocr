@@ -32,6 +32,15 @@ class StoredRef(BaseModel):
     variants: list[str]
 
 
+class PortraitInfo(BaseModel):
+    """Face photo on the card. The pixels are only available from the encrypted store."""
+
+    face_found: bool = Field(description="A face was detected; False means the crop is a guess.")
+    confidence: float = Field(ge=0.0, le=1.0)
+    box: list[int] = Field(description="x, y, w, h of the portrait crop on the rectified card.")
+    face_box: list[int] | None = None
+
+
 class CardResult(BaseModel):
     version: str
     side: str
@@ -41,6 +50,7 @@ class CardResult(BaseModel):
     fields: dict[str, FieldResult]
     quality: QualityInfo
     warnings: list[str] = Field(default_factory=list)
+    portrait: PortraitInfo | None = None
     stored: StoredRef | None = None
     timings_ms: dict[str, float] = Field(default_factory=dict)
 

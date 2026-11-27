@@ -42,7 +42,7 @@ idcard-ocr = "idcard_ocr.cli:main"
 where = ["src"]
 
 [tool.setuptools.package-data]
-idcard_ocr = ["layouts/*.json", "py.typed"]
+idcard_ocr = ["layouts/*.json", "assets/*", "py.typed"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

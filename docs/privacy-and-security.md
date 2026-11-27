@@ -42,3 +42,7 @@ checks can be done later.
 
 Never commit real ID photos. The synthetic generator produces fictional, watermarked specimens
 that do not imitate official artwork.
+
+## Portrait
+
+The face crop is biometric-adjacent data. It is returned only as metadata (boxes, `face_found`); the pixels exist only as the encrypted `portrait` variant and follow the same retention and erasure rules as the card image. The bundled YuNet model (MIT, see `src/idcard_ocr/assets/YUNET_LICENSE.txt`) runs locally; nothing leaves the process.

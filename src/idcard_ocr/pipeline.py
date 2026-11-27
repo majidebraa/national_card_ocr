@@ -20,10 +20,18 @@ from idcard_ocr.imaging.quality import (
     with_glare,
 )
 from idcard_ocr.layouts import LayoutRegistry
-from idcard_ocr.models import CardResult, FieldResult, PairResult, QualityInfo, StoredRef
+from idcard_ocr.models import (
+    CardResult,
+    FieldResult,
+    PairResult,
+    PortraitInfo,
+    QualityInfo,
+    StoredRef,
+)
 from idcard_ocr.ocr.base import OcrEngine
 from idcard_ocr.ocr.digits import MODEL_PATH, DigitEngine
 from idcard_ocr.ocr.tesseract import TesseractEngine
+from idcard_ocr.portrait import PortraitExtractor, default_model_path
 
 if TYPE_CHECKING:
     from idcard_ocr.store import EncryptedImageStore
@@ -52,6 +60,12 @@ class Pipeline:
         # otherwise Tesseract handles every field.
         self.digit_engine: DigitEngine | None = digit_engine or (
             DigitEngine() if MODEL_PATH.is_file() else None
+        )
+
+        self.portraits: PortraitExtractor | None = (
+            PortraitExtractor()
+            if settings.extract_portrait and default_model_path().is_file()
+            else None
         )
 
     def check_ready(self) -> None:
@@ -146,10 +160,29 @@ class Pipeline:
             )
         t = lap("ocr", t)
 
+        portrait_info: PortraitInfo | None = None
+        portrait_jpeg: bytes | None = None
+        photo_box = layout.markers.get("photo")
+        if self.portraits is not None and photo_box is not None:
+            found_portrait = self.portraits.extract(card, photo_box, offset)
+            portrait_info = PortraitInfo(
+                face_found=found_portrait.face_found,
+                confidence=found_portrait.confidence,
+                box=list(found_portrait.box),
+                face_box=list(found_portrait.face_box) if found_portrait.face_box else None,
+            )
+            portrait_jpeg = encode_jpeg(found_portrait.image)
+            if not found_portrait.face_found:
+                warnings.append("portrait_face_not_found")
+            t = lap("portrait", t)
+
         stored: StoredRef | None = None
         if store and self.store is not None:
+            blobs = {"original": data, "card": encode_jpeg(card)}
+            if portrait_jpeg is not None:
+                blobs["portrait"] = portrait_jpeg
             saved = self.store.save(
-                {"original": data, "card": encode_jpeg(card)},
+                blobs,
                 side=layout.side,
                 version=layout.version,
             )
@@ -172,6 +205,7 @@ class Pipeline:
             fields=fields,
             quality=QualityInfo(**quality.to_dict()),  # type: ignore[arg-type]
             warnings=warnings,
+            portrait=portrait_info,
             stored=stored,
             timings_ms=timings,
         )
