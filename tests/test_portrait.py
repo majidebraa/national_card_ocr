@@ -85,3 +85,22 @@ def test_orient_flips_only_when_the_face_is_upside_down(monkeypatch: pytest.Monk
     assert rotated and out[-1].min() == 255 and out[0].max() == 0
     out, rotated = run(False, False)
     assert not rotated and out is card
+
+
+def test_level_makes_the_eye_line_horizontal() -> None:
+    from idcard_ocr.portrait import level
+
+    card = np.zeros((200, 200, 3), np.uint8)
+    # eyes tilted 20 degrees (image-right eye lower), centred on (100, 100)
+    import math
+
+    dx, dy = 40 * math.cos(math.radians(20)), 40 * math.sin(math.radians(20))
+    right, left = (100 - dx, 100 - dy), (100 + dx, 100 + dy)
+    for cx, cy in (right, left):
+        card[round(cy) - 2 : round(cy) + 3, round(cx) - 2 : round(cx) + 3] = 255
+    out = level(card, (100.0, 100.0), right, left)
+    ys, xs = np.nonzero(out[..., 0] > 128)
+    left_y = ys[xs < 100].mean()
+    right_y = ys[xs >= 100].mean()
+    assert abs(left_y - right_y) < 2.5
+    assert level(card, (100.0, 100.0), (60, 100), (140, 101)) is card  # < MIN_TILT_DEG

@@ -28,6 +28,8 @@ MIN_FACE_FRACTION = 0.25  # face width relative to the photo box width
 PAD_X = 0.45  # margin around the face box, relative to its size
 PAD_TOP = 0.55
 PAD_BOTTOM = 0.45
+MAX_TILT_DEG = 35.0  # larger eye-line angles are treated as detector noise
+MIN_TILT_DEG = 3.0
 SEARCH_GROW = 0.35  # the search region is the photo box grown by this fraction per side
 
 
@@ -38,6 +40,30 @@ class Portrait:
     confidence: float
     face_box: tuple[int, int, int, int] | None
     image: np.ndarray
+
+
+def level(
+    card: np.ndarray,
+    center: tuple[float, float],
+    right_eye: tuple[float, float],
+    left_eye: tuple[float, float],
+) -> np.ndarray:
+    """Rotate ``card`` about ``center`` so the eye line becomes horizontal.
+
+    YuNet's "right eye" is the one on the left of the image. Small or implausible angles leave the
+    card untouched.
+    """
+    angle = float(np.degrees(np.arctan2(left_eye[1] - right_eye[1], left_eye[0] - right_eye[0])))
+    if abs(angle) < MIN_TILT_DEG or abs(angle) > MAX_TILT_DEG:
+        return card
+    matrix = cv2.getRotationMatrix2D(center, angle, 1.0)
+    return cv2.warpAffine(
+        card,
+        matrix,
+        (card.shape[1], card.shape[0]),
+        flags=cv2.INTER_CUBIC,
+        borderMode=cv2.BORDER_REPLICATE,
+    )
 
 
 def default_model_path() -> Path:
@@ -120,4 +146,10 @@ class PortraitExtractor:
             ch,
         )
         x, y, w, h = box
-        return Portrait(box, True, round(score, 4), face, card[y : y + h, x : x + w].copy())
+        leveled = level(
+            card,
+            (fx + fw / 2, fy + fh / 2),
+            (float(f[4]) + sx, float(f[5]) + sy),
+            (float(f[6]) + sx, float(f[7]) + sy),
+        )
+        return Portrait(box, True, round(score, 4), face, leveled[y : y + h, x : x + w].copy())
