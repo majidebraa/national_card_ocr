@@ -8,9 +8,9 @@ from typing import TYPE_CHECKING
 import cv2
 
 from idcard_ocr.config import Settings
-from idcard_ocr.errors import QualityError, StoreDisabledError
+from idcard_ocr.errors import ClassificationError, QualityError, StoreDisabledError
 from idcard_ocr.fields import SHIFTS, locate_offset, read_field
-from idcard_ocr.imaging.classify import classify
+from idcard_ocr.imaging.classify import Classification, classify
 from idcard_ocr.imaging.decode import decode_image, encode_jpeg
 from idcard_ocr.imaging.detect import detect_card, quad_width_px, rectify
 from idcard_ocr.imaging.quality import (
@@ -34,6 +34,8 @@ from idcard_ocr.ocr.tesseract import TesseractEngine
 from idcard_ocr.portrait import PortraitExtractor, default_model_path
 
 if TYPE_CHECKING:
+    import numpy as np
+
     from idcard_ocr.store import EncryptedImageStore
 
 
@@ -67,6 +69,36 @@ class Pipeline:
             if settings.extract_portrait and default_model_path().is_file()
             else None
         )
+
+    def _classify(
+        self, card: np.ndarray, side: str | None, version: str | None, warnings: list[str]
+    ) -> Classification:
+        """Colour/marker classification; with a single candidate layout the face is the fallback.
+
+        When the caller's hints leave exactly one layout, the only open question is the 180 degree
+        rotation, and a face in the photo box answers it even when the card's colours are too
+        washed out for the classifier.
+        """
+        try:
+            return classify(card, self.registry, side=side, version=version)
+        except ClassificationError:
+            candidates = [
+                lay
+                for lay in self.registry.all()
+                if (side is None or lay.side == side)
+                and (version is None or lay.version == version)
+            ]
+            photo = candidates[0].markers.get("photo") if len(candidates) == 1 else None
+            if self.portraits is None or photo is None:
+                raise
+            if self.portraits.has_face(card, photo):
+                rotated = False
+            elif self.portraits.has_face(cv2.rotate(card, cv2.ROTATE_180), photo):
+                rotated = True
+            else:
+                raise
+            warnings.append("classified_by_face")
+            return Classification(candidates[0], rotated, 0.3, {})
 
     def check_ready(self) -> None:
         self.engine.check_ready()
@@ -117,7 +149,7 @@ class Pipeline:
         self._gate(quality, warnings)
         t = lap("quality", t)
 
-        cls = classify(card, self.registry, side=side, version=version)
+        cls = self._classify(card, side, version, warnings)
         if cls.rotated_180:
             card = cv2.rotate(card, cv2.ROTATE_180)
             warnings.append("card_was_upside_down")

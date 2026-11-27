@@ -51,14 +51,14 @@ review); *recall* = exact and auto-accepted / all; *F1* = their harmonic mean.
 
 | Field | Accuracy | Accuracy of accepted photos | Precision | Recall | F1 |
 |---|---:|---:|---:|---:|---:|
-| national_id | 36.2% | 44.6% | 50.5%* | 36.2% | 42.2% |
-| birth_date | 31.8% | 39.1% | 92.7% | 31.8% | 47.3% |
-| expiry_date | 31.2% | 38.5% | 92.5% | 31.0% | 46.4% |
-| first_name | 25.2% | 31.1% | 0%** | 0%** | 0%** |
-| last_name | 23.8% | 29.2% | 0%** | 0%** | 0%** |
-| father_name | 23.2% | 28.6% | 0%** | 0%** | 0%** |
+| national_id | 37.0% | 41.8% | 47.6%* | 37.0% | 41.6% |
+| birth_date | 32.5% | 36.7% | 92.9% | 32.5% | 48.1% |
+| expiry_date | 31.8% | 35.9% | 92.0% | 31.5% | 46.9% |
+| first_name | 26.0% | 29.4% | 0%** | 0%** | 0%** |
+| last_name | 24.2% | 27.4% | 0%** | 0%** | 0%** |
+| father_name | 23.2% | 26.3% | 0%** | 0%** | 0%** |
 
-Photos accepted (card found and recognised): 325 / 400 (81.3%); 75 rejected as `classification_failed`.
+Photos accepted (card found and recognised): 354 / 400 (88.5%); 46 rejected as `classification_failed`.
 CPU time about 2.7 s per accepted photo on this 2-core machine with two workers.
 
 \* Without the checksum nothing separates a wrong ten-digit read from a right one, so national_id

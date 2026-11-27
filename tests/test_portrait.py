@@ -104,3 +104,32 @@ def test_level_makes_the_eye_line_horizontal() -> None:
     right_y = ys[xs >= 100].mean()
     assert abs(left_y - right_y) < 2.5
     assert level(card, (100.0, 100.0), (60, 100), (140, 101)) is card  # < MIN_TILT_DEG
+
+
+def test_single_layout_falls_back_to_the_face_when_classification_fails(
+    settings: Settings, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from idcard_ocr.errors import ClassificationError
+    from idcard_ocr.pipeline import Pipeline
+
+    pipe = Pipeline(settings, engine=FakeEngine())
+    layout = pipe.registry.get("new-front")
+    only = type(pipe.registry)([layout])
+    pipe.registry = only
+    card = np.full((638, 1011, 3), 128, np.uint8)
+
+    def refuse(*_a: object, **_k: object) -> None:
+        raise ClassificationError("nope")
+
+    monkeypatch.setattr("idcard_ocr.pipeline.classify", refuse)
+    assert pipe.portraits is not None
+    answers = iter([False, True])
+    monkeypatch.setattr(pipe.portraits, "has_face", lambda *_a, **_k: next(answers))
+    warnings: list[str] = []
+    cls = pipe._classify(card, "front", "new", warnings)
+    assert cls.layout.id == "new-front" and cls.rotated_180
+    assert warnings == ["classified_by_face"]
+
+    monkeypatch.setattr(pipe.portraits, "has_face", lambda *_a, **_k: False)
+    with pytest.raises(ClassificationError):
+        pipe._classify(card, "front", "new", [])

@@ -5,6 +5,9 @@
 * Orientation is cross-checked with the face: a card whose face is found only upside down is rotated
   by 180 degrees (warning `card_orientation_corrected`); fixed 110 of 1568 real photos. Effect on
   held-out national-id accuracy is small (34.1% -> 35.8%).
+* Classification fallback: when the hints leave a single layout and the colour classifier refuses, a
+  face in the photo box (upright or rotated) decides the orientation (warning `classified_by_face`).
+  Held-out photos accepted rose from 325 to 354 of 400; national-id accuracy 36.2% -> 37.0%.
 * Portrait crops are levelled by the eye line (YuNet landmarks, 3-35 degrees) before cropping.
 * Face-photo extraction: `idcard_ocr.portrait` (OpenCV YuNet, bundled 232 KB ONNX, MIT, ~40 ms per
   card on CPU) crops the portrait inside the layout's photo box (shifted by the located text block).
