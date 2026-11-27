@@ -36,36 +36,60 @@ Reproduce: `make bench`.
 ## Real photos (Kaggle dataset)
 
 Data: [kibordevents/iranian-national-id-card-dataset](https://www.kaggle.com/datasets/kibordevents/iranian-national-id-card-dataset),
-676 photos with labels available at the time of measurement. The cards are fictional but the photos
-are realistic: hand-held, tilted, upside down, fingers over the card, mixed lighting. New-card fronts only.
+1,856 photos of the 2,000 labelled rows were available. The cards are fictional but the photos are
+realistic: hand-held, tilted, upside down, fingers over the card, mixed lighting. New-card fronts only.
 
 Method (`scripts/kaggle_eval.py`, see [calibration/kaggle](../calibration/kaggle/README.md)):
-layout calibrated on the images; digit model = synthetic glyphs + real glyphs from the 540 training
-images (`id % 5 != 0`); evaluation on the 136 held-out images (`id % 5 == 0`), none of which were
-used for training. Checksum not used (the dataset's labels mostly fail it).
+layout calibrated on the images; digit model = synthetic glyphs + 32,930 real glyphs from the
+1,266 training photos in which the card was found (`id % 5 != 0`, two training rounds); evaluation on
+the **372 held-out photos** (`id % 5 == 0`), none used for training. The checksum is not used (the
+dataset's labels mostly fail it).
 
-| Metric | Result |
-|---|---|
-| held-out images accepted (card found, side recognised) | 115 / 136 (84.6%) |
-| rejected: card not recognised | 21 |
-| national_id exact | 45.2% of accepted |
-| birth_date exact | 40.9% |
-| expiry_date exact | 40.0% |
-| first / last / father name exact | 39.1% / 33.0% / 33.0% (always flagged) |
-| latency (1 CPU core) | about 1.8 s per image |
+Definitions, per field, over **all** held-out photos (a rejected photo yields no value, so it is a miss):
+*accuracy* = exact / all; *precision* = exact among values the service auto-accepts (not flagged for
+review); *recall* = exact and auto-accepted / all; *F1* = their harmonic mean.
 
-How to read it:
+| Field | Accuracy | Accuracy of accepted photos | Precision | Recall | F1 |
+|---|---:|---:|---:|---:|---:|
+| national_id | 34.1% | 42.1% | 50.0%* | 34.1% | 40.6% |
+| birth_date | 29.8% | 36.8% | 91.7% | 29.8% | 45.0% |
+| expiry_date | 29.6% | 36.4% | 93.2% | 29.3% | 44.6% |
+| first_name | 24.5% | 30.1% | 0%** | 0%** | 0%** |
+| last_name | 22.6% | 27.8% | 0%** | 0%** | 0%** |
+| father_name | 22.0% | 27.2% | 0%** | 0%** | 0%** |
 
-* Before calibration, 0 of 40 images were read at all. Calibration, orientation handling, a
-  stronger card detector, a digit model trained on real glyphs and anchor-based registration of
-  the text block brought it to the numbers above. It is **not production quality yet**.
-* Error analysis on national_id: when the crop yields exactly ten glyphs, reading is right about
-  three times in four and most remaining errors are one digit. The dominant loss is geometric:
-  hand-held photos where the detected quadrilateral includes background or clips the card, so the
-  text sits where the layout does not expect it. Better corner localisation is the highest-value next step.
-* "Silent error" is not reported here for national_id: without the checksum nothing distinguishes a
-  wrong ten-digit read from a right one. With real (checksum-valid) numbers the checksum rejects
-  about 10 of every 11 wrong reads, which this dataset cannot show.
-* Names stay at roughly one third: Tesseract's Persian model is weak on this typeface.
-  A Persian-capable text recogniser trained on real crops would help most there.
-* With 136 test images, differences of a few percentage points are noise.
+Photos accepted (card found and recognised): 302 / 372 (81.2%); 70 rejected as `classification_failed`.
+CPU time about 2.7 s per accepted photo on this 2-core machine with two workers.
+
+\* Without the checksum nothing separates a wrong ten-digit read from a right one, so national_id
+precision here is essentially its raw accuracy. With real, checksum-valid numbers the checksum rejects
+about 10 of every 11 wrong reads; this dataset cannot show that.
+\*\* Names are always flagged for review by design, so no name is ever auto-accepted: precision and
+recall are zero by construction. Their accuracy is the figure to read.
+
+**These are not production numbers.** More than half of the ids and dates are still wrong or missing.
+
+### What limits accuracy (error analysis)
+
+* **Rectification, not recognition, dominates.** Looking at failing crops: in many hand-held photos
+  the detected quadrilateral is not the card (fingers or background included), so the card stays
+  trapezoid-shaped and the text block lands away from the layout; some boxes sit on empty background.
+  Even when the ID line is located, glyphs from sheared or tilted cards differ from the training glyphs.
+* More training data did not help: going from 540 to 1,266 training photos left the held-out accuracy
+  unchanged (34% vs 34%) and a label-cleaned model gave the same end-to-end result.
+* Glyph-level accuracy on held-out real glyphs is about 89% (k-NN; SVM, MLP and gradient boosting land
+  within a point), and 0.89^10 is about 31% for a ten-digit id. Part of the "errors" are hard glyphs
+  (2/3/4 and 5/0 confusions on tilted cards), part are noisy auto-labels.
+* Names stay near a quarter: Tesseract's Persian model is weak on this typeface.
+
+### Next steps with the best expected gain
+
+1. A real corner detector for hand-held photos (line fitting on a Canny/LSD edge map with a
+   rectangle prior, or a small learned corner model trained on annotated corners).
+2. Rotation and shear augmentation of the glyph training data, and a small CNN instead of k-NN once
+   geometry is fixed.
+3. A Persian text recogniser trained on name crops (the dataset has the labels) instead of Tesseract.
+4. Rerun on checksum-valid, real, consented cards: that is the only way to know real-world accuracy.
+
+Earlier measurement (676 photos, 136 held-out, same method): national_id 45%, dates about 41% of
+accepted. The larger, more representative test set is lower; with 136 images a few points are noise.

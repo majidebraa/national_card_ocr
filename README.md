@@ -13,9 +13,9 @@ front and back), with **encrypted image retention** for later identity verificat
 >   Before production you must calibrate the layouts on real, consented samples
 >   ([docs/calibration.md](docs/calibration.md)).
 > * First real-photo measurement (fictional cards from a public Kaggle dataset, new-card fronts,
->   hand-held photos): about **84% of photos accepted; national id 45%, dates about 40% exact** after
->   calibration, names about one third ([docs/benchmarks.md](docs/benchmarks.md)). That is not
->   production quality. Old cards and card backs have no real-photo calibration at all.
+>   372 held-out hand-held photos): **81% of photos accepted; accuracy over all photos: national id 34%,
+>   dates about 30%, names about 23%** (F1 about 40-45% for ids and dates; see
+>   [docs/benchmarks.md](docs/benchmarks.md)). That is not production quality. Old cards and card backs have no real-photo calibration at all.
 > * The bundled digit model is trained on fonts and does not read the real card numerals; a model
 >   trained on real glyphs does (see [calibration/kaggle](calibration/kaggle/README.md)).
 > * Free-text names are read with Tesseract's Persian model, which is weak. **Names always require

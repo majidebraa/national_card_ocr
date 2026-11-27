@@ -9,11 +9,13 @@ to decide. Fetch them yourself:
 
 ```bash
 scripts/download_dataset.sh                       # needs Kaggle credentials
-python scripts/kaggle_eval.py \
-    --images data/raw --csv data/raw/iranian_national_id_card_data.csv \
-    --train-model data/digit_model_kaggle.npz     # trains on id % 5 != 0, evaluates on id % 5 == 0
-python scripts/kaggle_eval.py --images data/raw --csv data/raw/iranian_national_id_card_data.csv \
-    --model data/digit_model_kaggle.npz           # evaluate an existing model
+CSV=data/raw/iranian_national_id_card_data.csv
+# Resumable stages; the cache holds rectified, oriented cards (about 5 min for 1,856 photos on 2 cores)
+python scripts/kaggle_eval.py --images data/raw --csv $CSV --cache data/cache --stage cache
+python scripts/kaggle_eval.py --images data/raw --csv $CSV --cache data/cache --stage train \
+    --train-model data/digit_model_kaggle.npz     # trains on id % 5 != 0 (about 12 min)
+python scripts/kaggle_eval.py --images data/raw --csv $CSV --stage eval \
+    --model data/digit_model_kaggle.npz --json data/results.json   # id % 5 == 0; accuracy, precision, recall, F1
 ```
 
 Use the layout and model in the service with:
