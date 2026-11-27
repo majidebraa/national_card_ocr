@@ -127,6 +127,12 @@ class Pipeline:
         self._gate(quality, warnings, only="glare")
         t = lap("classify", t)
 
+        photo_box = layout.markers.get("photo")
+        if self.portraits is not None and photo_box is not None and layout.side == "front":
+            card, flipped = self.portraits.orient(card, photo_box)
+            if flipped:
+                warnings.append("card_orientation_corrected")
+            t = lap("orient", t)
         offset = (0, 0)
         max_shifts = len(SHIFTS)
         anchor = next((f for f in layout.fields.values() if f.kind == "national_id"), None)
@@ -162,7 +168,6 @@ class Pipeline:
 
         portrait_info: PortraitInfo | None = None
         portrait_jpeg: bytes | None = None
-        photo_box = layout.markers.get("photo")
         if self.portraits is not None and photo_box is not None:
             found_portrait = self.portraits.extract(card, photo_box, offset)
             portrait_info = PortraitInfo(

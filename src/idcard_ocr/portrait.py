@@ -63,6 +63,23 @@ class PortraitExtractor:
         self._lock = threading.Lock()
         self._det = cv2.FaceDetectorYN.create(self._path, "", (320, 320), SCORE_THRESHOLD, 0.3, 10)
 
+    def has_face(self, card: np.ndarray, photo: Box, offset: tuple[int, int] = (0, 0)) -> bool:
+        return self.extract(card, photo, offset).face_found
+
+    def orient(self, card: np.ndarray, photo: Box) -> tuple[np.ndarray, bool]:
+        """Rotate the card by 180 degrees when a face is only found upside down.
+
+        The colour/marker classifier cannot always tell a card from its 180-degree rotation on
+        hand-held photos; a face in the photo box is a much stronger cue. Returns the card and
+        whether it was rotated. Ambiguous or face-less cards are left alone.
+        """
+        if self.has_face(card, photo):
+            return card, False
+        flipped = cv2.rotate(card, cv2.ROTATE_180)
+        if self.has_face(flipped, photo):
+            return flipped, True
+        return card, False
+
     def extract(self, card: np.ndarray, photo: Box, offset: tuple[int, int] = (0, 0)) -> Portrait:
         ch, cw = card.shape[:2]
         px, py = photo.x + offset[0], photo.y + offset[1]

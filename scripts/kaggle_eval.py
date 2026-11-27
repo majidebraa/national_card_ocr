@@ -42,6 +42,7 @@ from idcard_ocr.imaging.detect import detect_card, rectify
 from idcard_ocr.layouts import Box, LayoutRegistry, parse_layout
 from idcard_ocr.ocr.digits import CLASSES, MODEL_PATH, DigitEngine, DigitModel, glyph_matrix
 from idcard_ocr.pipeline import Pipeline
+from idcard_ocr.portrait import PortraitExtractor
 from idcard_ocr.validation.national_id import NationalIdResult
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -74,7 +75,12 @@ def _init_common(layout_path: str) -> None:
     cv2.setNumThreads(1)
     settings = Settings.from_env({**os.environ, "IDCARD_QUALITY_MODE": "warn"})
     layout = parse_layout(json.loads(Path(layout_path).read_text(encoding="utf-8")))
-    _G.update(settings=settings, layout=layout, registry=LayoutRegistry([layout]))
+    _G.update(
+        settings=settings,
+        layout=layout,
+        registry=LayoutRegistry([layout]),
+        portraits=PortraitExtractor(),
+    )
 
 
 # -- stage 1: cache oriented, rectified cards ------------------------------------------------
@@ -94,6 +100,8 @@ def _cache_one(job: tuple[str, str]) -> int:
         )
         if classify(card, _G["registry"], side="front", version="new").rotated_180:
             card = cv2.rotate(card, cv2.ROTATE_180)
+        # a face found only upside down overrules the colour classifier (as in the pipeline)
+        card, _ = _G["portraits"].orient(card, _G["layout"].markers["photo"])
     except IdCardError:
         Path(dst + ".none").touch()  # remember failures so a resumed run skips them
         return 0

@@ -67,3 +67,21 @@ def test_portrait_can_be_disabled(
     directory, samples = easy_dataset
     result = pipe.process((directory / samples[0].file).read_bytes())
     assert result.portrait is None
+
+
+def test_orient_flips_only_when_the_face_is_upside_down(monkeypatch: pytest.MonkeyPatch) -> None:
+    card = np.zeros((638, 1011, 3), np.uint8)
+    card[:10] = 255  # marks the top edge
+    ex = PortraitExtractor()
+
+    def run(upright: bool, flipped: bool) -> tuple[np.ndarray, bool]:
+        calls = iter([upright, flipped])
+        monkeypatch.setattr(ex, "has_face", lambda *_a, **_k: next(calls))
+        return ex.orient(card, PHOTO)
+
+    out, rotated = run(True, False)
+    assert not rotated and out is card
+    out, rotated = run(False, True)
+    assert rotated and out[-1].min() == 255 and out[0].max() == 0
+    out, rotated = run(False, False)
+    assert not rotated and out is card

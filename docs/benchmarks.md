@@ -77,6 +77,10 @@ recall are zero by construction. Their accuracy is the figure to read.
   Even when the ID line is located, glyphs from sheared or tilted cards differ from the training glyphs.
 * More training data did not help: going from 540 to 1,266 training photos left the held-out accuracy
   unchanged (34% vs 34%) and a label-cleaned model gave the same end-to-end result.
+* **Orientation is not the bottleneck.** 7% of the cached cards (110 of 1,568) were still upside down
+  after the colour classifier; cross-checking with the face fixed them, and held-out national-id accuracy
+  moved only from 34.1% to 35.8% (dates and names within 1 point). Corner accuracy and glyph quality
+  on tilted cards remain the limit.
 * Glyph-level accuracy on held-out real glyphs is about 89% (k-NN; SVM, MLP and gradient boosting land
   within a point), and 0.89^10 is about 31% for a ten-digit id. Part of the "errors" are hard glyphs
   (2/3/4 and 5/0 confusions on tilted cards), part are noisy auto-labels.

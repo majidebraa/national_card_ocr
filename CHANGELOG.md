@@ -2,6 +2,9 @@
 
 ## 0.1.0 - unreleased
 
+* Orientation is cross-checked with the face: a card whose face is found only upside down is rotated
+  by 180 degrees (warning `card_orientation_corrected`); fixed 110 of 1568 real photos. Effect on
+  held-out national-id accuracy is small (34.1% -> 35.8%).
 * Face-photo extraction: `idcard_ocr.portrait` (OpenCV YuNet, bundled 232 KB ONNX, MIT, ~40 ms per
   card on CPU) crops the portrait inside the layout's photo box (shifted by the located text block).
   Reported as `portrait` in the result (`face_found`, `confidence`, boxes), retained encrypted as the
