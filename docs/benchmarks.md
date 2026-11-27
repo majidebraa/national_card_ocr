@@ -36,13 +36,13 @@ Reproduce: `make bench`.
 ## Real photos (Kaggle dataset)
 
 Data: [kibordevents/iranian-national-id-card-dataset](https://www.kaggle.com/datasets/kibordevents/iranian-national-id-card-dataset),
-1,856 photos of the 2,000 labelled rows were available. The cards are fictional but the photos are
+All 2,000 labelled photos were used (1,856 first, the missing 144 added later). The cards are fictional but the photos are
 realistic: hand-held, tilted, upside down, fingers over the card, mixed lighting. New-card fronts only.
 
 Method (`scripts/kaggle_eval.py`, see [calibration/kaggle](../calibration/kaggle/README.md)):
-layout calibrated on the images; digit model = synthetic glyphs + 32,930 real glyphs from the
-1,266 training photos in which the card was found (`id % 5 != 0`, two training rounds); evaluation on
-the **372 held-out photos** (`id % 5 == 0`), none used for training. The checksum is not used (the
+layout calibrated on the images; digit model = synthetic glyphs + 37,190 real glyphs from the
+1,376 training photos in which the card was found (`id % 5 != 0`, two training rounds); evaluation on
+the **400 held-out photos** (`id % 5 == 0`), none used for training. The checksum is not used (the
 dataset's labels mostly fail it).
 
 Definitions, per field, over **all** held-out photos (a rejected photo yields no value, so it is a miss):
@@ -51,14 +51,14 @@ review); *recall* = exact and auto-accepted / all; *F1* = their harmonic mean.
 
 | Field | Accuracy | Accuracy of accepted photos | Precision | Recall | F1 |
 |---|---:|---:|---:|---:|---:|
-| national_id | 34.1% | 42.1% | 50.0%* | 34.1% | 40.6% |
-| birth_date | 29.8% | 36.8% | 91.7% | 29.8% | 45.0% |
-| expiry_date | 29.6% | 36.4% | 93.2% | 29.3% | 44.6% |
-| first_name | 24.5% | 30.1% | 0%** | 0%** | 0%** |
-| last_name | 22.6% | 27.8% | 0%** | 0%** | 0%** |
-| father_name | 22.0% | 27.2% | 0%** | 0%** | 0%** |
+| national_id | 36.2% | 44.6% | 50.5%* | 36.2% | 42.2% |
+| birth_date | 31.8% | 39.1% | 92.7% | 31.8% | 47.3% |
+| expiry_date | 31.2% | 38.5% | 92.5% | 31.0% | 46.4% |
+| first_name | 25.2% | 31.1% | 0%** | 0%** | 0%** |
+| last_name | 23.8% | 29.2% | 0%** | 0%** | 0%** |
+| father_name | 23.2% | 28.6% | 0%** | 0%** | 0%** |
 
-Photos accepted (card found and recognised): 302 / 372 (81.2%); 70 rejected as `classification_failed`.
+Photos accepted (card found and recognised): 325 / 400 (81.3%); 75 rejected as `classification_failed`.
 CPU time about 2.7 s per accepted photo on this 2-core machine with two workers.
 
 \* Without the checksum nothing separates a wrong ten-digit read from a right one, so national_id

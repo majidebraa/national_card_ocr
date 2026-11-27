@@ -10,7 +10,7 @@ to decide. Fetch them yourself:
 ```bash
 scripts/download_dataset.sh                       # needs Kaggle credentials
 CSV=data/raw/iranian_national_id_card_data.csv
-# Resumable stages; the cache holds rectified, oriented cards (about 5 min for 1,856 photos on 2 cores)
+# Resumable stages; the cache holds rectified, oriented cards (about 5 min for 2,000 photos on 2 cores)
 python scripts/kaggle_eval.py --images data/raw --csv $CSV --cache data/cache --stage cache
 python scripts/kaggle_eval.py --images data/raw --csv $CSV --cache data/cache --stage train \
     --train-model data/digit_model_kaggle.npz     # trains on id % 5 != 0 (about 12 min)
