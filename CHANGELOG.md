@@ -5,6 +5,9 @@
 * Orientation is cross-checked with the face: a card whose face is found only upside down is rotated
   by 180 degrees (warning `card_orientation_corrected`); fixed 110 of 1568 real photos. Effect on
   held-out national-id accuracy is small (34.1% -> 35.8%).
+* Digit lines are deskewed (rotation up to 10 degrees, row-projection sharpness) before
+  segmentation, in recognition and in training. Held-out national-id accuracy 37.0% -> 41.8% (F1
+  41.6% -> 46.8%); dates +1.7 points.
 * Classification fallback: when the hints leave a single layout and the colour classifier refuses, a
   face in the photo box (upright or rotated) decides the orientation (warning `classified_by_face`).
   Held-out photos accepted rose from 325 to 354 of 400; national-id accuracy 36.2% -> 37.0%.

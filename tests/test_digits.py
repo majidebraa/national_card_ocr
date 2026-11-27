@@ -146,3 +146,26 @@ class TestModel:
     def test_checksum_property(self) -> None:
         rng = random.Random(3)
         assert all(is_valid_national_id(random_identity(rng).national_id) for _ in range(50))
+
+
+class TestDeskew:
+    def test_rotated_line_is_straightened(self) -> None:
+        import cv2
+
+        from idcard_ocr.ocr.digits import deskew
+
+        ink = np.zeros((120, 600), np.uint8)
+        for i in range(10):
+            cv2.rectangle(ink, (20 + i * 55, 30), (50 + i * 55, 90), 255, -1)
+        tilted = cv2.warpAffine(ink, cv2.getRotationMatrix2D((300, 60), 6, 1.0), (600, 120))
+        fixed = deskew(tilted)
+        assert (
+            np.square(fixed.sum(axis=1).astype(float)).sum()
+            > np.square(tilted.sum(axis=1).astype(float)).sum()
+        )
+
+    def test_straight_or_blank_input_is_untouched(self) -> None:
+        from idcard_ocr.ocr.digits import deskew
+
+        blank = np.zeros((60, 200), np.uint8)
+        assert deskew(blank) is blank

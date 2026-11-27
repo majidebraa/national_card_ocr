@@ -51,11 +51,11 @@ review); *recall* = exact and auto-accepted / all; *F1* = their harmonic mean.
 
 | Field | Accuracy | Accuracy of accepted photos | Precision | Recall | F1 |
 |---|---:|---:|---:|---:|---:|
-| national_id | 37.0% | 41.8% | 47.6%* | 37.0% | 41.6% |
-| birth_date | 32.5% | 36.7% | 92.9% | 32.5% | 48.1% |
-| expiry_date | 31.8% | 35.9% | 92.0% | 31.5% | 46.9% |
-| first_name | 26.0% | 29.4% | 0%** | 0%** | 0%** |
-| last_name | 24.2% | 27.4% | 0%** | 0%** | 0%** |
+| national_id | 41.8% | 47.2% | 53.2%* | 41.8% | 46.8% |
+| birth_date | 34.2% | 38.7% | 91.3% | 34.2% | 49.8% |
+| expiry_date | 33.5% | 37.9% | 94.4% | 33.5% | 49.4% |
+| first_name | 26.8% | 30.2% | 0%** | 0%** | 0%** |
+| last_name | 25.2% | 28.5% | 0%** | 0%** | 0%** |
 | father_name | 23.2% | 26.3% | 0%** | 0%** | 0%** |
 
 Photos accepted (card found and recognised): 354 / 400 (88.5%); 46 rejected as `classification_failed`.
@@ -81,6 +81,9 @@ recall are zero by construction. Their accuracy is the figure to read.
   after the colour classifier; cross-checking with the face fixed them, and held-out national-id accuracy
   moved only from 34.1% to 35.8% (dates and names within 1 point). Corner accuracy and glyph quality
   on tilted cards remain the limit.
+* **Deskewing the digit line** (rotation search, see `ocr/digits.py:deskew`) was the largest single gain
+  of the last rounds: national-id accuracy 37.0% -> 41.8%. A slant (shear) search was tried and dropped:
+  the date slash is itself slanted and the synthetic date test fell from 100% to 37%.
 * Glyph-level accuracy on held-out real glyphs is about 89% (k-NN; SVM, MLP and gradient boosting land
   within a point), and 0.89^10 is about 31% for a ten-digit id. Part of the "errors" are hard glyphs
   (2/3/4 and 5/0 confusions on tilted cards), part are noisy auto-labels.

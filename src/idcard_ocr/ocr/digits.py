@@ -65,6 +65,44 @@ def binarize(gray: np.ndarray) -> np.ndarray:
     return ink
 
 
+MAX_SKEW_DEG = 10.0
+
+
+def _sharpness(profile: np.ndarray) -> float:
+    return float(np.square(profile.astype(np.float64)).sum())
+
+
+def deskew(ink: np.ndarray) -> np.ndarray:
+    """Straighten a line of digits by the rotation that sharpens the row projection.
+
+    Hand-held photos leave a residual rotation after the card is rectified from imperfect corners,
+    which makes the HOG features of one digit differ wildly. Only the ink mask is warped. A shear
+    (slant) search was tried and rejected: the slash in dates is itself slanted.
+    """
+    h, w = ink.shape[:2]
+    if h < 8 or w < 8 or not ink.any():
+        return ink
+    scale = min(1.0, 96.0 / h)
+    small = cv2.resize(
+        ink, (max(1, round(w * scale)), max(1, round(h * scale))), interpolation=cv2.INTER_AREA
+    )
+    sh, sw = small.shape[:2]
+    centre = (sw / 2.0, sh / 2.0)
+
+    def rotated(angle: float) -> np.ndarray:
+        m = cv2.getRotationMatrix2D(centre, angle, 1.0)
+        return cv2.warpAffine(small, m, (sw, sh), flags=cv2.INTER_LINEAR)
+
+    angles = np.arange(-MAX_SKEW_DEG, MAX_SKEW_DEG + 0.1, 1.0)
+    best_angle = float(max(angles, key=lambda a: _sharpness(rotated(a).sum(axis=1))))
+    if abs(best_angle) < 1.0:
+        return ink
+    m_rot = cv2.getRotationMatrix2D((w / 2.0, h / 2.0), best_angle, 1.0)
+    out = cv2.warpAffine(ink, m_rot, (w, h), flags=cv2.INTER_LINEAR)
+    _, out = cv2.threshold(out, 127, 255, cv2.THRESH_BINARY)
+    return out
+
+
 def _make_component(mask: np.ndarray) -> Component | None:
     ys, xs = np.nonzero(mask)
     if xs.size == 0:
@@ -193,7 +231,7 @@ def glyph_features(comp: Component, top: float, line_h: float) -> np.ndarray:
 
 
 def glyph_matrix(gray: np.ndarray) -> tuple[list[Component], np.ndarray]:
-    comps = segment(binarize(gray))
+    comps = segment(deskew(binarize(gray)))
     if not comps:
         return [], np.zeros((0, 324), dtype=np.float32)
     top, line_h = line_box(comps)
