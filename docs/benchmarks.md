@@ -84,6 +84,11 @@ recall are zero by construction. Their accuracy is the figure to read.
 * **Deskewing the digit line** (rotation search, see `ocr/digits.py:deskew`) was the largest single gain
   of the last rounds: national-id accuracy 37.0% -> 41.8%. A slant (shear) search was tried and dropped:
   the date slash is itself slanted and the synthetic date test fell from 100% to 37%.
+* **Tried and rejected: face-based registration.** Warping each card so its face matches the median face
+  box (rotation from the eye line, scale from the face width, translation) made things worse: national-id
+  accuracy 41.8% -> 36.8%, dates -1.7 to -4.8 points. The face size and position vary between people more
+  than the card geometry does, and the extra resampling blurs the glyphs. Corner accuracy has to be fixed
+  in the detector, not downstream of it.
 * Glyph-level accuracy on held-out real glyphs is about 89% (k-NN; SVM, MLP and gradient boosting land
   within a point), and 0.89^10 is about 31% for a ten-digit id. Part of the "errors" are hard glyphs
   (2/3/4 and 5/0 confusions on tilted cards), part are noisy auto-labels.
