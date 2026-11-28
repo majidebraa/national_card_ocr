@@ -1,0 +1,196 @@
+{
+ "counts": {
+  "images": 400,
+  "seconds_x1000": 692801,
+  "accepted": 354,
+  "national_id:exact": 48,
+  "national_id:auto": 311,
+  "national_id:auto_ok": 48,
+  "national_id:chars": 3540,
+  "national_id:chars_ok": 1491,
+  "birth_date:exact": 69,
+  "birth_date:auto": 105,
+  "birth_date:auto_ok": 69,
+  "birth_date:chars": 3540,
+  "birth_date:chars_ok": 1453,
+  "expiry_date:exact": 48,
+  "expiry_date:auto": 85,
+  "expiry_date:auto_ok": 48,
+  "expiry_date:chars": 3540,
+  "expiry_date:chars_ok": 1359,
+  "first_name:exact": 95,
+  "first_name:auto": 0,
+  "first_name:auto_ok": 0,
+  "first_name:chars": 1780,
+  "first_name:chars_ok": 613,
+  "last_name:exact": 95,
+  "last_name:auto": 0,
+  "last_name:auto_ok": 0,
+  "last_name:chars": 1955,
+  "last_name:chars_ok": 722,
+  "father_name:exact": 92,
+  "father_name:auto": 0,
+  "father_name:auto_ok": 0,
+  "father_name:chars": 1791,
+  "father_name:chars_ok": 605,
+  "rejected:classification_failed": 46
+ },
+ "summary": {
+  "national_id": {
+   "accuracy": 0.12,
+   "accuracy_of_accepted": 0.13559322033898305,
+   "precision": 0.15434083601286175,
+   "recall": 0.12,
+   "f1": 0.13502109704641352,
+   "char_accuracy": 0.4211864406779661,
+   "ci95": {
+    "accuracy": [
+     0.09,
+     0.1525
+    ],
+    "precision": [
+     0.1168698439924855,
+     0.19544333583370152
+    ],
+    "recall": [
+     0.09,
+     0.1525
+    ],
+    "f1": [
+     0.10183515930285522,
+     0.1716074876635914
+    ]
+   }
+  },
+  "birth_date": {
+   "accuracy": 0.1725,
+   "accuracy_of_accepted": 0.19491525423728814,
+   "precision": 0.6571428571428571,
+   "recall": 0.1725,
+   "f1": 0.27326732673267323,
+   "char_accuracy": 0.41045197740112993,
+   "ci95": {
+    "accuracy": [
+     0.1375,
+     0.2125
+    ],
+    "precision": [
+     0.5686222910216718,
+     0.7520678816133362
+    ],
+    "recall": [
+     0.1375,
+     0.2125
+    ],
+    "f1": [
+     0.22403098603947677,
+     0.3269354043392504
+    ]
+   }
+  },
+  "expiry_date": {
+   "accuracy": 0.12,
+   "accuracy_of_accepted": 0.13559322033898305,
+   "precision": 0.5647058823529412,
+   "recall": 0.12,
+   "f1": 0.1979381443298969,
+   "char_accuracy": 0.38389830508474576,
+   "ci95": {
+    "accuracy": [
+     0.0875,
+     0.1525
+    ],
+    "precision": [
+     0.45160306845003934,
+     0.6712998808814767
+    ],
+    "recall": [
+     0.0875,
+     0.1525
+    ],
+    "f1": [
+     0.14861995753715498,
+     0.24746649557458644
+    ]
+   }
+  },
+  "first_name": {
+   "accuracy": 0.2375,
+   "accuracy_of_accepted": 0.268361581920904,
+   "precision": 0.0,
+   "recall": 0.0,
+   "f1": 0.0,
+   "char_accuracy": 0.34438202247191013,
+   "ci95": {
+    "accuracy": [
+     0.195,
+     0.27756249999999966
+    ],
+    "precision": [
+     0.0,
+     0.0
+    ],
+    "recall": [
+     0.0,
+     0.0
+    ],
+    "f1": [
+     0.0,
+     0.0
+    ]
+   }
+  },
+  "last_name": {
+   "accuracy": 0.2375,
+   "accuracy_of_accepted": 0.268361581920904,
+   "precision": 0.0,
+   "recall": 0.0,
+   "f1": 0.0,
+   "char_accuracy": 0.369309462915601,
+   "ci95": {
+    "accuracy": [
+     0.1975,
+     0.28006249999999966
+    ],
+    "precision": [
+     0.0,
+     0.0
+    ],
+    "recall": [
+     0.0,
+     0.0
+    ],
+    "f1": [
+     0.0,
+     0.0
+    ]
+   }
+  },
+  "father_name": {
+   "accuracy": 0.23,
+   "accuracy_of_accepted": 0.2598870056497175,
+   "precision": 0.0,
+   "recall": 0.0,
+   "f1": 0.0,
+   "char_accuracy": 0.3378001116694584,
+   "ci95": {
+    "accuracy": [
+     0.1874375,
+     0.2725
+    ],
+    "precision": [
+     0.0,
+     0.0
+    ],
+    "recall": [
+     0.0,
+     0.0
+    ],
+    "f1": [
+     0.0,
+     0.0
+    ]
+   }
+  }
+ }
+}

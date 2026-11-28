@@ -275,17 +275,19 @@ def stage_train(args: argparse.Namespace) -> None:
         int(k): (float(v[0]), int(v[1]), int(v[2]))
         for k, v in json.loads((Path(args.work) / "align.json").read_text()).items()
     }
+    if args.no_align:  # ablation: every card at the nominal window, verified or not
+        align = dict.fromkeys(data.ids, NOMINAL)
     samples = [(i, f, h) for i, h in align.items() for f in data.spec.fields]
     net = Net()
     net.load_state_dict(torch.load(Path(args.work) / "boot.pt"))
     # keep the id head and let the date classes (incl. "/") be learned from the verified windows
-    run_epochs(net, data, samples, args.epochs, 1e-3, 1, negatives=0.05)
-    torch.save(net.state_dict(), Path(args.work) / "joint.pt")
+    run_epochs(net, data, samples, args.epochs, 1e-3, args.seed, negatives=0.05)
+    torch.save(net.state_dict(), Path(args.work) / args.name)
 
 
 def stage_export(args: argparse.Namespace) -> None:
     net = Net()
-    net.load_state_dict(torch.load(Path(args.work) / "joint.pt"))
+    net.load_state_dict(torch.load(Path(args.work) / args.name))
     net.eval()
     x = torch.randn(4, 2, INPUT_H, INPUT_W)
     torch.onnx.export(
@@ -323,6 +325,9 @@ def main() -> None:
     ap.add_argument("--work", default="work")
     ap.add_argument("--out", default="crnn.onnx")
     ap.add_argument("--epochs", type=int, default=None)
+    ap.add_argument("--seed", type=int, default=1, help="seed of the joint stage")
+    ap.add_argument("--name", default="joint.pt", help="checkpoint file written by `train`")
+    ap.add_argument("--no-align", action="store_true", help="ablation: skip pseudo-alignment")
     ap.add_argument("--test-mod", type=int, default=5, help="ids divisible by this are held out")
     args = ap.parse_args()
     Path(args.work).mkdir(parents=True, exist_ok=True)

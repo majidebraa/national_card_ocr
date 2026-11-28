@@ -198,21 +198,24 @@ def _init_eval(layout_path: str, model_path: str | None) -> None:
     _G["pipeline"] = Pipeline(_G["settings"], registry=_G["registry"], digit_engine=engine)
 
 
-def _eval_one(job: tuple[str, dict[str, str]]) -> dict[str, int]:
+def _eval_one(job: tuple[str, dict[str, str]]) -> tuple[dict[str, int], dict[str, object]]:
     path, row = job
     out: Counter[str] = Counter({"images": 1})
+    record: dict[str, object] = {"id": int(Path(path).stem)}
     t = time.perf_counter()
     try:
         result = _G["pipeline"].process(Path(path).read_bytes(), side="front", version="new")
     except IdCardError as exc:
         out[f"rejected:{exc.code}"] += 1
-        return dict(out)
+        record["rejected"] = exc.code
+        return dict(out), record
     out["seconds_x1000"] = int((time.perf_counter() - t) * 1000)
     out["accepted"] += 1
     for name, column in COLUMNS.items():
         f = result.fields[name]
         want = row[column]
         ok = f.value == want
+        record[name] = [f.value, bool(f.needs_review), bool(ok)]
         out[f"{name}:exact"] += ok
         out[f"{name}:auto"] += not f.needs_review
         out[f"{name}:auto_ok"] += ok and not f.needs_review
@@ -220,7 +223,34 @@ def _eval_one(job: tuple[str, dict[str, str]]) -> dict[str, int]:
         out[f"{name}:chars_ok"] += sum(
             a == b for a, b in zip(f.value.ljust(len(want)), want, strict=False)
         )
-    return dict(out)
+    return dict(out), record
+
+
+def bootstrap_ci(
+    records: list[dict[str, object]], name: str, draws: int = 2000, seed: int = 0
+) -> dict[str, list[float]]:
+    """95% percentile bootstrap over photos of accuracy, precision, recall and F1 of one field."""
+    n = len(records)
+    exact = np.zeros(n, bool)
+    auto = np.zeros(n, bool)
+    for k, rec in enumerate(records):
+        if name in rec:
+            _, review, ok = rec[name]  # type: ignore[misc]
+            exact[k], auto[k] = ok, not review
+    rng = np.random.default_rng(seed)
+    metrics: dict[str, list[float]] = {m: [] for m in ("accuracy", "precision", "recall", "f1")}
+    for _ in range(draws):
+        idx = rng.integers(0, n, n)
+        e, a = exact[idx], auto[idx]
+        prec = (e & a).sum() / a.sum() if a.sum() else 0.0
+        rec_ = (e & a).sum() / n
+        metrics["accuracy"].append(e.mean())
+        metrics["precision"].append(prec)
+        metrics["recall"].append(rec_)
+        metrics["f1"].append(2 * prec * rec_ / (prec + rec_) if prec + rec_ else 0.0)
+    return {
+        m: [float(np.percentile(v, 2.5)), float(np.percentile(v, 97.5))] for m, v in metrics.items()
+    }
 
 
 def stage_eval(images, rows, test_ids, layout_path, model, jobs, json_out) -> None:  # type: ignore[no-untyped-def]
@@ -228,9 +258,11 @@ def stage_eval(images, rows, test_ids, layout_path, model, jobs, json_out) -> No
         (str(images / f"{i}.jpg"), rows[i]) for i in test_ids if (images / f"{i}.jpg").is_file()
     ]
     stats: Counter[str] = Counter()
+    records: list[dict[str, object]] = []
     with Pool(jobs, _init_eval, (str(layout_path), str(model) if model else None)) as pool:
-        for part in pool.imap_unordered(_eval_one, work, chunksize=2):
+        for part, record in pool.imap_unordered(_eval_one, work, chunksize=2):
             stats.update(part)
+            records.append(record)
     total = max(stats["images"], 1)
     acc = max(stats["accepted"], 1)
     secs = stats["seconds_x1000"] / 1000 / acc
@@ -258,9 +290,18 @@ def stage_eval(images, rows, test_ids, layout_path, model, jobs, json_out) -> No
             "char_accuracy": char,
         }
         print(f"{name:12} {ex / total:9.1%} {prec:10.1%} {rec:7.1%} {f1:7.1%} {char:9.1%}")
+        summary[name]["ci95"] = bootstrap_ci(records, name)  # type: ignore[assignment]
     if json_out:
         json_out.write_text(
-            json.dumps({"counts": dict(stats), "summary": summary}, indent=2), encoding="utf-8"
+            json.dumps(
+                {
+                    "counts": dict(stats),
+                    "summary": summary,
+                    "records": sorted(records, key=lambda r: r["id"]),
+                },  # type: ignore[arg-type,return-value]
+                indent=1,
+            ),
+            encoding="utf-8",
         )
 
 

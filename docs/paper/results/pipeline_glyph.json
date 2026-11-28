@@ -1,0 +1,196 @@
+{
+ "counts": {
+  "images": 400,
+  "seconds_x1000": 1501269,
+  "accepted": 354,
+  "national_id:exact": 167,
+  "national_id:auto": 314,
+  "national_id:auto_ok": 167,
+  "national_id:chars": 3540,
+  "national_id:chars_ok": 1926,
+  "birth_date:exact": 137,
+  "birth_date:auto": 150,
+  "birth_date:auto_ok": 137,
+  "birth_date:chars": 3540,
+  "birth_date:chars_ok": 1570,
+  "expiry_date:exact": 134,
+  "expiry_date:auto": 142,
+  "expiry_date:auto_ok": 134,
+  "expiry_date:chars": 3540,
+  "expiry_date:chars_ok": 1527,
+  "first_name:exact": 107,
+  "first_name:auto": 0,
+  "first_name:auto_ok": 0,
+  "first_name:chars": 1780,
+  "first_name:chars_ok": 652,
+  "last_name:exact": 101,
+  "last_name:auto": 0,
+  "last_name:auto_ok": 0,
+  "last_name:chars": 1955,
+  "last_name:chars_ok": 761,
+  "father_name:exact": 93,
+  "father_name:auto": 0,
+  "father_name:auto_ok": 0,
+  "father_name:chars": 1791,
+  "father_name:chars_ok": 624,
+  "rejected:classification_failed": 46
+ },
+ "summary": {
+  "national_id": {
+   "accuracy": 0.4175,
+   "accuracy_of_accepted": 0.4717514124293785,
+   "precision": 0.5318471337579618,
+   "recall": 0.4175,
+   "f1": 0.4677871148459383,
+   "char_accuracy": 0.5440677966101695,
+   "ci95": {
+    "accuracy": [
+     0.3699375,
+     0.4675
+    ],
+    "precision": [
+     0.47468354430379744,
+     0.5882400226971818
+    ],
+    "recall": [
+     0.3699375,
+     0.4675
+    ],
+    "f1": [
+     0.416435273490935,
+     0.5188411660001386
+    ]
+   }
+  },
+  "birth_date": {
+   "accuracy": 0.3425,
+   "accuracy_of_accepted": 0.3870056497175141,
+   "precision": 0.9133333333333333,
+   "recall": 0.3425,
+   "f1": 0.4981818181818182,
+   "char_accuracy": 0.4435028248587571,
+   "ci95": {
+    "accuracy": [
+     0.295,
+     0.39
+    ],
+    "precision": [
+     0.8661971830985915,
+     0.9539536460425874
+    ],
+    "recall": [
+     0.295,
+     0.39
+    ],
+    "f1": [
+     0.4440298507462687,
+     0.5512367491166078
+    ]
+   }
+  },
+  "expiry_date": {
+   "accuracy": 0.335,
+   "accuracy_of_accepted": 0.3785310734463277,
+   "precision": 0.9436619718309859,
+   "recall": 0.335,
+   "f1": 0.4944649446494465,
+   "char_accuracy": 0.43135593220338986,
+   "ci95": {
+    "accuracy": [
+     0.28993749999999996,
+     0.3825
+    ],
+    "precision": [
+     0.9014084507042254,
+     0.9781021897810219
+    ],
+    "recall": [
+     0.28993749999999996,
+     0.3825
+    ],
+    "f1": [
+     0.440218251986703,
+     0.5474060822898033
+    ]
+   }
+  },
+  "first_name": {
+   "accuracy": 0.2675,
+   "accuracy_of_accepted": 0.3022598870056497,
+   "precision": 0.0,
+   "recall": 0.0,
+   "f1": 0.0,
+   "char_accuracy": 0.36629213483146067,
+   "ci95": {
+    "accuracy": [
+     0.225,
+     0.3125
+    ],
+    "precision": [
+     0.0,
+     0.0
+    ],
+    "recall": [
+     0.0,
+     0.0
+    ],
+    "f1": [
+     0.0,
+     0.0
+    ]
+   }
+  },
+  "last_name": {
+   "accuracy": 0.2525,
+   "accuracy_of_accepted": 0.2853107344632768,
+   "precision": 0.0,
+   "recall": 0.0,
+   "f1": 0.0,
+   "char_accuracy": 0.38925831202046035,
+   "ci95": {
+    "accuracy": [
+     0.21,
+     0.2975
+    ],
+    "precision": [
+     0.0,
+     0.0
+    ],
+    "recall": [
+     0.0,
+     0.0
+    ],
+    "f1": [
+     0.0,
+     0.0
+    ]
+   }
+  },
+  "father_name": {
+   "accuracy": 0.2325,
+   "accuracy_of_accepted": 0.2627118644067797,
+   "precision": 0.0,
+   "recall": 0.0,
+   "f1": 0.0,
+   "char_accuracy": 0.34840871021775544,
+   "ci95": {
+    "accuracy": [
+     0.19,
+     0.275
+    ],
+    "precision": [
+     0.0,
+     0.0
+    ],
+    "recall": [
+     0.0,
+     0.0
+    ],
+    "f1": [
+     0.0,
+     0.0
+    ]
+   }
+  }
+ }
+}
