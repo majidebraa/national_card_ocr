@@ -1,0 +1,12 @@
+\begin{tabular}{lccccccccc}
+\toprule
+ & \multicolumn{3}{c}{National id} & \multicolumn{3}{c}{Birth date} & \multicolumn{3}{c}{Expiry date}\\
+\cmidrule(lr){2-4}\cmidrule(lr){5-7}\cmidrule(lr){8-10}
+Method & Acc & Prec & Rec & Acc & Prec & Rec & Acc & Prec & Rec\\
+\midrule
+Tesseract & 0.120 & 0.154 & 0.120 & 0.172 & 0.657 & 0.172 & 0.120 & 0.565 & 0.120 \\
+EasyOCR & 0.020 & 0.444 & 0.010 & 0.000 & 0.000 & 0.000 & 0.000 & 0.000 & 0.000 \\
+Glyph + k-NN & 0.417 & 0.532 & 0.417 & 0.343 & 0.913 & 0.343 & 0.335 & 0.944 & 0.335 \\
+Proposed & 0.568 & 0.996 & 0.568 & 0.550 & 0.978 & 0.550 & 0.530 & 0.986 & 0.527 \\
+\bottomrule
+\end{tabular}

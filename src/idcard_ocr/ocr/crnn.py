@@ -83,6 +83,15 @@ def window(
     )
 
 
+def window_box(
+    centre: tuple[float, float], size: tuple[float, float], shape: tuple[int, int]
+) -> tuple[int, int, int, int]:
+    """Integer crop box (x0, y0, x1, y1) of a window at scale 1, clipped to an image ``shape``."""
+    x0, y0 = round(centre[0] - size[0] / 2), round(centre[1] - size[1] / 2)
+    x1, y1 = round(centre[0] + size[0] / 2), round(centre[1] + size[1] / 2)
+    return max(0, x0), max(0, y0), min(shape[1], x1), min(shape[0], y1)
+
+
 def normalise(windows: np.ndarray) -> np.ndarray:
     x = windows.astype(np.float32) / 255.0
     mean = x.mean(axis=(1, 2), keepdims=True)

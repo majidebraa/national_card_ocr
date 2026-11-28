@@ -134,6 +134,8 @@ def main() -> None:
             )
             conf = np.array([preds[i][name].confidence for i in ids])
             per[name] = metrics(ok, conf, args.threshold, args.draws, 0)
+            per[name]["confidence"] = [round(float(c), 4) for c in conf]  # type: ignore[index]
+            per[name]["correct"] = [bool(o) for o in ok]  # type: ignore[index]
             m: dict[str, dict[str, float]] = per[name]  # type: ignore[assignment]
             keys = ("accuracy", "precision", "recall", "f1", "auc")
             line = " ".join(f"{k} {m[k]['value']:.3f}" for k in keys)

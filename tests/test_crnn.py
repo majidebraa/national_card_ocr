@@ -226,3 +226,10 @@ def test_layout_crnn_section_is_parsed() -> None:
     raw["crnn"]["fields"]["nope"] = {"centre": [1, 1], "plane": 0, "kind": "date"}
     with pytest.raises(Exception, match="unknown field"):
         parse_layout(raw)
+
+
+def test_window_box_is_clipped_to_the_image() -> None:
+    from idcard_ocr.ocr.crnn import window_box
+
+    assert window_box((690.0, 174.0), (360.0, 166.0), (638, 1011)) == (510, 91, 870, 257)
+    assert window_box((100.0, 20.0), (360.0, 166.0), (638, 1011)) == (0, 0, 280, 103)
