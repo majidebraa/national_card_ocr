@@ -29,6 +29,7 @@ from idcard_ocr.models import (
     StoredRef,
 )
 from idcard_ocr.ocr.base import OcrEngine
+from idcard_ocr.ocr.crnn import CrnnEngine
 from idcard_ocr.ocr.digits import MODEL_PATH, DigitEngine
 from idcard_ocr.ocr.tesseract import TesseractEngine
 from idcard_ocr.portrait import PortraitExtractor, default_model_path
@@ -64,6 +65,11 @@ class Pipeline:
             DigitEngine() if MODEL_PATH.is_file() else None
         )
 
+        self.crnn: CrnnEngine | None = (
+            CrnnEngine.from_onnx(settings.crnn_model, settings.crnn_threads)
+            if settings.crnn_model
+            else None
+        )
         self.portraits: PortraitExtractor | None = (
             PortraitExtractor()
             if settings.extract_portrait and default_model_path().is_file()
@@ -181,6 +187,11 @@ class Pipeline:
                 if offset != (0, 0):
                     warnings.append("text_block_shifted")
 
+        line_readings = (
+            self.crnn.read(card, layout.crnn) if self.crnn is not None and layout.crnn else {}
+        )
+        if line_readings:
+            t = lap("crnn", t)
         fields: dict[str, FieldResult] = {}
         for name, spec in layout.fields.items():
             fields[name] = read_field(
@@ -195,6 +206,8 @@ class Pipeline:
                 digit_engine=self.digit_engine,
                 offset=offset,
                 max_shifts=max_shifts,
+                crnn=line_readings.get(name),
+                crnn_min_confidence=s.crnn_min_confidence,
             )
         t = lap("ocr", t)
 

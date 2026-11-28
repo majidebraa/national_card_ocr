@@ -92,5 +92,41 @@
       "kind": "date",
       "required": false
     }
+  },
+  "crnn": {
+    "window": [
+      360,
+      166
+    ],
+    "anchor": [
+      690,
+      174
+    ],
+    "fields": {
+      "national_id": {
+        "centre": [
+          690,
+          174
+        ],
+        "plane": 0,
+        "kind": "national_id"
+      },
+      "birth_date": {
+        "centre": [
+          700,
+          357
+        ],
+        "plane": 1,
+        "kind": "date"
+      },
+      "expiry_date": {
+        "centre": [
+          700,
+          480
+        ],
+        "plane": 2,
+        "kind": "date"
+      }
+    }
   }
 }

@@ -2,6 +2,11 @@
 
 ## 0.1.0 - unreleased
 
+* **Line recogniser (CRNN + CTC) with joint registration** for the national id and dates (`ocr/crnn.py`,
+  `scripts/train_crnn.py`, `docs/crnn.md`; optional `[crnn]` extra, ONNX Runtime). On 400 held-out real
+  photos: national id F1 46.8% -> 72.3% (precision 99.6%), dates F1 ~49% -> ~70% (precision ~98%).
+  Unconfirmed glyph readings are flagged `line_reader_unconfirmed`. Settings `IDCARD_CRNN_MODEL`,
+  `IDCARD_CRNN_MIN_CONFIDENCE`, `IDCARD_CRNN_THREADS`. The trained model is not distributed.
 * Orientation is cross-checked with the face: a card whose face is found only upside down is rotated
   by 180 degrees (warning `card_orientation_corrected`); fixed 110 of 1568 real photos. Effect on
   held-out national-id accuracy is small (34.1% -> 35.8%).

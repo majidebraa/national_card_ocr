@@ -77,6 +77,8 @@ recall are zero by construction. Their accuracy is the figure to read.
   Even when the ID line is located, glyphs from sheared or tilted cards differ from the training glyphs.
 * More training data did not help: going from 540 to 1,266 training photos left the held-out accuracy
   unchanged (34% vs 34%) and a label-cleaned model gave the same end-to-end result.
+* **The line recogniser changes the picture** ([crnn.md](crnn.md)): id F1 46.8% -> 72.3%, dates ~49% -> ~70%,
+  with precision ~98-99.6%. Everything below this bullet describes the glyph pipeline.
 * **Orientation is not the bottleneck.** 7% of the cached cards (110 of 1,568) were still upside down
   after the colour classifier; cross-checking with the face fixed them, and held-out national-id accuracy
   moved only from 34.1% to 35.8% (dates and names within 1 point). Corner accuracy and glyph quality

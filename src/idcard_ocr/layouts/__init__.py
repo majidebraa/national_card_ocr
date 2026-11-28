@@ -47,6 +47,15 @@ class FieldSpec:
 
 
 @dataclass(frozen=True, slots=True)
+class CrnnSpec:
+    """Geometry the line recogniser was trained with (see ``ocr/crnn.py``)."""
+
+    window: tuple[float, float]  # card pixels covered by one network input at scale 1
+    anchor: tuple[float, float]  # point the registration hypotheses scale around
+    fields: dict[str, tuple[float, float, int, str]]  # name -> (cx, cy, plane id, kind)
+
+
+@dataclass(frozen=True, slots=True)
 class Layout:
     id: str
     version: str
@@ -56,6 +65,25 @@ class Layout:
     bg_probe: Box
     markers: dict[str, Box] = field(default_factory=dict)
     fields: dict[str, FieldSpec] = field(default_factory=dict)
+    crnn: CrnnSpec | None = None
+
+
+def _crnn_spec(raw: dict | None, lid: str, fields: dict[str, FieldSpec]) -> CrnnSpec | None:
+    if not raw:
+        return None
+    window = raw["window"]
+    anchor = raw["anchor"]
+    spec: dict[str, tuple[float, float, int, str]] = {}
+    for name, item in raw["fields"].items():
+        if name not in fields:
+            raise LayoutError(f"{lid}.crnn: unknown field {name!r}")
+        cx, cy = item["centre"]
+        spec[name] = (float(cx), float(cy), int(item["plane"]), str(item["kind"]))
+    if len(window) != 2 or len(anchor) != 2 or not spec:
+        raise LayoutError(f"{lid}.crnn: window, anchor and fields are required")
+    return CrnnSpec(
+        (float(window[0]), float(window[1])), (float(anchor[0]), float(anchor[1])), spec
+    )
 
 
 def _box(raw: Any, what: str, size: tuple[int, int]) -> Box:
@@ -109,6 +137,7 @@ def parse_layout(raw: dict[str, Any]) -> Layout:
             bg_probe=_box(raw["bg_probe"], f"{lid}.bg_probe", size),
             markers=markers,
             fields=fields,
+            crnn=_crnn_spec(raw.get("crnn"), lid, fields),
         )
     except KeyError as exc:
         raise LayoutError(f"layout is missing required key {exc}") from exc

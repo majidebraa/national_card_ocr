@@ -72,6 +72,9 @@ class Settings:
     # Tesseract's confidence is poorly calibrated for Persian free text (wrong names are often
     # read with high confidence), so names always require user confirmation unless this is on.
     trust_names: bool = False
+    crnn_model: str = ""  # path to the ONNX line recogniser; empty = not used
+    crnn_min_confidence: float = 0.9
+    crnn_threads: int = 1
     extract_portrait: bool = True  # crop the face photo (YuNet, ~40 ms/card)
     # --- concurrency (resource-limited hosts: keep this small) ---------------------------
     max_concurrency: int = 2
@@ -112,6 +115,9 @@ class Settings:
             ocr_timeout_s=_float(e, "IDCARD_OCR_TIMEOUT", d.ocr_timeout_s),
             trust_names=_bool(e, "IDCARD_TRUST_NAMES", d.trust_names),
             extract_portrait=_bool(e, "IDCARD_EXTRACT_PORTRAIT", d.extract_portrait),
+            crnn_model=e.get("IDCARD_CRNN_MODEL", d.crnn_model),
+            crnn_min_confidence=_float(e, "IDCARD_CRNN_MIN_CONFIDENCE", d.crnn_min_confidence),
+            crnn_threads=_int(e, "IDCARD_CRNN_THREADS", d.crnn_threads),
             review_confidence=_float(e, "IDCARD_REVIEW_CONFIDENCE", d.review_confidence),
             max_concurrency=max(1, _int(e, "IDCARD_MAX_CONCURRENCY", min(2, cpus))),
             cv_threads=max(1, _int(e, "IDCARD_CV_THREADS", d.cv_threads)),

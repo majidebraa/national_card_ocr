@@ -18,6 +18,7 @@ import numpy as np
 from idcard_ocr.layouts import Box, FieldSpec
 from idcard_ocr.models import FieldResult
 from idcard_ocr.ocr.base import OcrEngine
+from idcard_ocr.ocr.crnn import CrnnReading
 from idcard_ocr.ocr.digits import DigitEngine, decode_national_id
 from idcard_ocr.validation.dates import parse_jalali
 from idcard_ocr.validation.national_id import normalize_national_id
@@ -320,7 +321,13 @@ def read_field(
     trust_names: bool = False,
     offset: tuple[int, int] = (0, 0),
     max_shifts: int = len(SHIFTS),
+    crnn: CrnnReading | None = None,
+    crnn_min_confidence: float = 0.9,
 ) -> FieldResult:
+    if crnn is not None and spec.kind in ("national_id", "date"):
+        line = _crnn_candidate(spec.kind, crnn, crnn_min_confidence)
+        if line is not None:
+            return _finish(line, spec, review_confidence, trust_names)
     if offset != (0, 0):
         spec = replace(spec, roi=_shifted(spec.roi, *offset))
     crop = crop_roi(card, spec.roi, layout_size)
@@ -341,6 +348,38 @@ def read_field(
         cand = _read_serial(engine, variants, spec, latin_lang)
     else:
         cand = _read_name(engine, variants, alt_lang)
+    result = _finish(cand, spec, review_confidence, trust_names)
+    if crnn is not None and spec.kind in ("national_id", "date"):
+        # The line reader was active but not confident: the segment-and-classify reading stands
+        # alone, and measured on real photos it is right far less often than its confidence says.
+        issues = [*result.issues, "line_reader_unconfirmed"]
+        return result.model_copy(update={"needs_review": True, "issues": issues})
+    return result
+
+
+def _crnn_candidate(kind: str, reading: CrnnReading, min_confidence: float) -> _Candidate | None:
+    """A confident, valid line reading, or None to fall back to the classic path."""
+    if reading.confidence < min_confidence:
+        return None
+    if kind == "national_id":
+        res = normalize_national_id(reading.text)
+        cand = _Candidate(res.value, reading.text, reading.confidence, res.valid, list(res.issues))
+    else:
+        parsed = parse_jalali(reading.text)
+        cand = _Candidate(
+            parsed.value,
+            reading.text,
+            reading.confidence,
+            parsed.valid,
+            list(parsed.issues),
+            parsed.gregorian,
+        )
+    return cand if cand.valid else None
+
+
+def _finish(
+    cand: _Candidate, spec: FieldSpec, review_confidence: float, trust_names: bool
+) -> FieldResult:
     issues = list(cand.issues)
     if not cand.value:
         issues.append("missing")

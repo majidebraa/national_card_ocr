@@ -32,6 +32,9 @@ All settings are environment variables (see `src/idcard_ocr/config.py`).
 | `IDCARD_MIN_SOURCE_WIDTH` | `520` | minimum card width in source pixels |
 | `IDCARD_REVIEW_CONFIDENCE` | `0.60` | below this a field is flagged |
 | `IDCARD_TRUST_NAMES` | `0` | allow names to skip review (not recommended) |
+| `IDCARD_CRNN_MODEL` | empty | path to the ONNX line recogniser ([docs/crnn.md](crnn.md)); empty disables it |
+| `IDCARD_CRNN_MIN_CONFIDENCE` | `0.9` | CTC confidence needed to skip the glyph fallback |
+| `IDCARD_CRNN_THREADS` | `1` | ONNX Runtime threads |
 | `IDCARD_EXTRACT_PORTRAIT` | `1` | crop the face photo (YuNet, ~40 ms/card); `0` disables |
 | `IDCARD_OCR_LANG` / `IDCARD_OCR_ALT_LANG` / `IDCARD_OCR_LATIN_LANG` | `fas` / `ara` / `eng` | Tesseract languages (alt empty disables) |
 | `IDCARD_TESSDATA_DIR` | system | directory with `*.traineddata` |
